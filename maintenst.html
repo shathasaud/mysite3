@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بطاقات التحدي الذكية 🎯</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            box-sizing: border-box;
+            font-family: 'Tajawal', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 1000px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            color: #4a5568;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .subtitle {
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .score-display {
+            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            font-size: 1.2rem;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+            padding: 20px;
+        }
+
+        .challenge-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 25px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .challenge-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+
+        .challenge-card.completed {
+            background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
+            cursor: default;
+        }
+
+        .challenge-card.completed:hover {
+            transform: none;
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .card-category {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .card-status {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .shuffle-button {
+            background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 20px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            font-family: 'Tajawal', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .shuffle-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .back-to-lesson-btn {
+            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 30px 20px 20px 20px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            font-family: 'Tajawal', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            box-shadow: 0 5px 15px rgba(66, 153, 225, 0.3);
+        }
+
+        .back-to-lesson-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px rgba(66, 153, 225, 0.4);
+            background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);
+        }
+
+        .question-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+            animation: modalSlideIn 0.5s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @keyframes modalSlideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .question-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .question-text {
+            font-size: 1.4rem;
+            color: #2d3748;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .answer-input {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            resize: vertical;
+            margin-bottom: 20px;
+            font-family: inherit;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .rating-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .rating-btn {
+            padding: 12px 20px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            min-width: 150px;
+        }
+
+        .rating-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .rating-btn.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .submit-btn {
+            background: #38a169;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background: #2f855a;
+        }
+
+        .close-btn {
+            background: #e53e3e;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: #c53030;
+        }
+
+        .skills-info {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border-right: 5px solid #667eea;
+        }
+
+        .skills-title {
+            color: #2d3748;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            background: #e2e8f0;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
+            height: 100%;
+            transition: width 0.5s ease;
+            border-radius: 5px;
+        }
+
+        .question-options {
+            margin: 20px 0;
+        }
+
+        .option-btn {
+            display: block;
+            width: 100%;
+            padding: 15px 20px;
+            margin: 10px 0;
+            border: 2px solid #e2e8f0;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            text-align: right;
+            font-family: inherit;
+        }
+
+        .option-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+
+        .option-btn.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .option-btn.correct {
+            background: #38a169;
+            color: white;
+            border-color: #38a169;
+        }
+
+        .option-btn.incorrect {
+            background: #e53e3e;
+            color: white;
+            border-color: #e53e3e;
+        }
+
+        .true-btn:hover, .false-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .result-display.correct {
+            background: #f0fff4;
+            border: 2px solid #38a169;
+            color: #2f855a;
+        }
+
+        .result-display.incorrect {
+            background: #fef5e7;
+            border: 2px solid #e53e3e;
+            color: #c53030;
+        }
+
+        @media (max-width: 768px) {
+            .cards-container {
+                grid-template-columns: 1fr;
+                padding: 10px;
+            }
+            
+            .title {
+                font-size: 2rem;
+            }
+            
+            .modal-content {
+                padding: 20px;
+                margin: 20px;
+            }
+            
+            .rating-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .score-display {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1 class="title">بطاقات التحدي الذكية 🎯</h1>
+        <p class="subtitle">اختاري البطاقة واختبري معرفتك في التنفيذ والصيانة</p>
+        
+        <div class="skills-info">
+            <div class="skills-title">🧠 مهارات التفكير المستهدفة:</div>
+            <div style="margin-bottom: 10px; font-weight: bold; color: #4a5568;">التحليل – التركيب – التقييم</div>
+            <div style="color: #718096;">الاستراتيجية: التعليم بالتلعيب + التعلّم القائم على المشكلات</div>
+        </div>
+        
+        <div class="score-display">
+            <div>النقاط الحالية: <span id="totalScore">0</span> ⭐</div>
+            <div>التحديات المكتملة: <span id="completedCount">0</span>/6</div>
+            <div>المستوى: <span id="currentLevel">مبتدئة</span> 🎖️</div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+
+        <button class="shuffle-button" id="shuffleBtn">خلط البطاقات 🔀</button>
+
+        <div class="cards-container" id="cardsContainer">
+            <!-- البطاقات ستُضاف هنا بواسطة JavaScript -->
+        </div>
+
+        <button class="back-to-lesson-btn" onclick="window.open('https://www.shathaedu.com/slc2', '_blank')">
+            📚 العودة للدرس
+        </button>
+
+    </div>
+
+    <!-- Modal للأسئلة -->
+    <div class="question-modal" id="questionModal">
+        <div class="modal-content">
+            <div class="question-header">
+                <span id="questionIcon"></span>
+                <span id="questionCategory"></span>
+            </div>
+            <p class="question-text" id="questionText"></p>
+            <p class="scenario-text" id="scenarioText" style="display: none; background: #f0f8ff; padding: 15px; border-radius: 10px; margin: 15px 0; font-style: italic; color: #2c5282;"></p>
+            
+            <!-- خيارات الأسئلة -->
+            <div class="question-options" id="questionOptions" style="display: none;">
+                <!-- ستُضاف الخيارات هنا بواسطة JavaScript -->
+            </div>
+            
+            <!-- أزرار صح/خطأ -->
+            <div class="true-false-buttons" id="trueFalseButtons" style="display: none; margin: 20px 0;">
+                <button class="option-btn true-btn" data-answer="true" style="background: #38a169; color: white; padding: 15px 30px; margin: 10px; border: none; border-radius: 10px; cursor: pointer; font-size: 1.1rem; transition: all 0.3s ease;">صحيح ✅</button>
+                <button class="option-btn false-btn" data-answer="false" style="background: #e53e3e; color: white; padding: 15px 30px; margin: 10px; border: none; border-radius: 10px; cursor: pointer; font-size: 1.1rem; transition: all 0.3s ease;">خطأ ❌</button>
+            </div>
+            
+            <!-- عرض النتيجة -->
+            <div class="result-display" id="resultDisplay" style="display: none; margin: 20px 0; padding: 20px; border-radius: 10px; font-size: 1.1rem; font-weight: bold;">
+                <div class="result-status" id="resultStatus"></div>
+                <div class="result-explanation" id="resultExplanation" style="margin-top: 10px; font-weight: normal; line-height: 1.5;"></div>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="submit-btn" id="submitAnswer" style="display: none;">تسجيل الإجابة ✅</button>
+                <button class="show-answer-btn" id="showAnswerBtn" style="background: #3182ce; color: white; border: none; padding: 12px 30px; border-radius: 10px; cursor: pointer; font-size: 1rem; transition: all 0.3s ease; margin: 10px;">عرض الإجابة 👁️</button>
+                <button class="next-btn" id="nextBtn" style="display: none; background: #38a169; color: white; border: none; padding: 12px 30px; border-radius: 10px; cursor: pointer; font-size: 1rem; transition: all 0.3s ease; margin: 10px;">التالي ➡️</button>
+                <button class="close-btn" id="closeModal">إغلاق ❌</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const challenges = [
+            {
+                icon: "🛰️",
+                category: "اختياري",
+                type: "multiple_choice",
+                title: "ما هو أهم عامل لضمان كفاءة النظام؟",
+                options: [
+                    "سرعة المعالج فقط",
+                    "تحسين الكود وإدارة الذاكرة",
+                    "زيادة حجم التخزين",
+                    "استخدام أحدث التقنيات"
+                ],
+                correct: 1,
+                explanation: "تحسين الكود وإدارة الذاكرة بكفاءة هما الأساس لضمان أداء النظام المثلى",
+                color: "linear-gradient(135deg, #3182ce 0%, #2c5282 100%)"
+            },
+            {
+                icon: "✅",
+                category: "صح أم خطأ",
+                type: "true_false",
+                title: "يجب اختبار التطبيق على جهاز واحد فقط قبل رفعه للمتجر",
+                correct: false,
+                explanation: "خطأ - يجب اختبار التطبيق على أجهزة متعددة وأنظمة تشغيل مختلفة لضمان التوافق",
+                color: "linear-gradient(135deg, #805ad5 0%, #6b46c1 100%)"
+            },
+            {
+                icon: "🎭",
+                category: "موقف",
+                type: "scenario",
+                title: "المستخدمون يشتكون من بطء التطبيق. ما أول خطوة تتخذينها؟",
+                options: [
+                    "إعادة كتابة التطبيق من الصفر",
+                    "تحليل الأداء وتحديد نقاط الاختناق",
+                    "زيادة موارد الخادم فوراً",
+                    "تجاهل الشكاوى مؤقتاً"
+                ],
+                correct: 1,
+                explanation: "تحليل الأداء أولاً يساعد في تحديد المشكلة الحقيقية قبل اتخاذ أي إجراء",
+                color: "linear-gradient(135deg, #ed8936 0%, #dd6b20 100%)"
+            },
+            {
+                icon: "🔍",
+                category: "دور",
+                type: "role_play",
+                title: "كمطورة، كيف تتعاملين مع خلل حرج في النظام أثناء ساعات العمل؟",
+                scenario: "اكتشفت خللاً يؤثر على 50% من المستخدمين",
+                options: [
+                    "إصلاح سريع مؤقت + تحديث شامل لاحقاً",
+                    "إيقاف النظام حتى الإصلاح الكامل",
+                    "تجاهل المشكلة حتى نهاية اليوم",
+                    "إخبار المستخدمين بإعادة تشغيل أجهزتهم"
+                ],
+                correct: 0,
+                explanation: "الإصلاح السريع يقلل التأثير على المستخدمين، مع التخطيط لحل شامل لاحقاً",
+                color: "linear-gradient(135deg, #38a169 0%, #2f855a 100%)"
+            },
+            {
+                icon: "✅",
+                category: "صح أم خطأ",
+                type: "true_false",
+                title: "النسخ الاحتياطية ضرورية فقط للبيانات المهمة",
+                correct: false,
+                explanation: "خطأ - جميع البيانات مهمة ويجب عمل نسخ احتياطية شاملة ومنتظمة",
+                color: "linear-gradient(135deg, #3182ce 0%, #2c5282 100%)"
+            },
+            {
+                icon: "📊",
+                category: "اختياري",
+                type: "multiple_choice",
+                title: "أي من هذه المقاييس الأهم لتقييم جودة النظام بعد الصيانة؟",
+                options: [
+                    "عدد الأخطاء المُصححة فقط",
+                    "رضا المستخدمين + الأداء + الاستقرار",
+                    "سرعة الاستجابة فقط",
+                    "حجم الكود المُحدث"
+                ],
+                correct: 1,
+                explanation: "التقييم الشامل يشمل رضا المستخدمين والأداء والاستقرار معاً",
+                color: "linear-gradient(135deg, #805ad5 0%, #6b46c1 100%)"
+            }
+        ];
+
+        let totalScore = 0;
+        let completedChallenges = new Set();
+        let currentChallengeIndex = -1;
+        let userAnswer = null;
+        let answerRevealed = false;
+
+        const cardsContainer = document.getElementById('cardsContainer');
+        const shuffleBtn = document.getElementById('shuffleBtn');
+        const modal = document.getElementById('questionModal');
+        const questionIcon = document.getElementById('questionIcon');
+        const questionCategory = document.getElementById('questionCategory');
+        const questionText = document.getElementById('questionText');
+        const scenarioText = document.getElementById('scenarioText');
+        const questionOptions = document.getElementById('questionOptions');
+        const trueFalseButtons = document.getElementById('trueFalseButtons');
+        const resultDisplay = document.getElementById('resultDisplay');
+        const resultStatus = document.getElementById('resultStatus');
+        const resultExplanation = document.getElementById('resultExplanation');
+        const submitBtn = document.getElementById('submitAnswer');
+        const showAnswerBtn = document.getElementById('showAnswerBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const closeBtn = document.getElementById('closeModal');
+        const totalScoreElement = document.getElementById('totalScore');
+        const completedCountElement = document.getElementById('completedCount');
+        const currentLevelElement = document.getElementById('currentLevel');
+        const progressFill = document.getElementById('progressFill');
+
+        // إنشاء البطاقات
+        function createCards() {
+            cardsContainer.innerHTML = '';
+            challenges.forEach((challenge, index) => {
+                const card = document.createElement('div');
+                card.className = `challenge-card ${completedChallenges.has(index) ? 'completed' : ''}`;
+                card.style.background = completedChallenges.has(index) ? 
+                    'linear-gradient(135deg, #38a169 0%, #2f855a 100%)' : challenge.color;
+                
+                card.innerHTML = `
+                    <div class="card-status">
+                        ${completedChallenges.has(index) ? 'مكتمل ✅' : 'جديد 🆕'}
+                    </div>
+                    <div class="card-icon">${challenge.icon}</div>
+                    <div class="card-category">${challenge.category}</div>
+                    <div class="card-title">${challenge.title}</div>
+                `;
+                
+                if (!completedChallenges.has(index)) {
+                    card.addEventListener('click', () => openChallenge(index));
+                }
+                
+                cardsContainer.appendChild(card);
+            });
+        }
+
+        // فتح التحدي
+        function openChallenge(index) {
+            currentChallengeIndex = index;
+            const challenge = challenges[index];
+            userAnswer = null;
+            answerRevealed = false;
+            
+            questionIcon.textContent = challenge.icon;
+            questionCategory.textContent = challenge.category;
+            questionText.textContent = challenge.title;
+            
+            // إخفاء جميع العناصر أولاً
+            questionOptions.style.display = 'none';
+            trueFalseButtons.style.display = 'none';
+            scenarioText.style.display = 'none';
+            resultDisplay.style.display = 'none';
+            submitBtn.style.display = 'none';
+            nextBtn.style.display = 'none';
+            showAnswerBtn.style.display = 'inline-block';
+            
+            // عرض المحتوى حسب نوع السؤال
+            if (challenge.type === 'multiple_choice' || challenge.type === 'scenario' || challenge.type === 'role_play') {
+                if (challenge.scenario) {
+                    scenarioText.textContent = challenge.scenario;
+                    scenarioText.style.display = 'block';
+                }
+                
+                questionOptions.innerHTML = '';
+                challenge.options.forEach((option, optionIndex) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.textContent = option;
+                    btn.dataset.index = optionIndex;
+                    btn.addEventListener('click', () => selectOption(optionIndex));
+                    questionOptions.appendChild(btn);
+                });
+                questionOptions.style.display = 'block';
+            } else if (challenge.type === 'true_false') {
+                trueFalseButtons.style.display = 'block';
+                // إعادة تعيين أزرار صح/خطأ
+                document.querySelectorAll('.true-false-buttons .option-btn').forEach(btn => {
+                    btn.classList.remove('selected', 'correct', 'incorrect');
+                });
+            }
+            
+            modal.style.display = 'flex';
+        }
+
+        // اختيار خيار
+        function selectOption(index) {
+            userAnswer = index;
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.querySelector(`[data-index="${index}"]`).classList.add('selected');
+        }
+
+        // خلط البطاقات
+        shuffleBtn.addEventListener('click', function() {
+            // تأثير الخلط
+            cardsContainer.style.transform = 'scale(0.9)';
+            cardsContainer.style.opacity = '0.5';
+            
+            setTimeout(() => {
+                // خلط ترتيب التحديات
+                for (let i = challenges.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [challenges[i], challenges[j]] = [challenges[j], challenges[i]];
+                }
+                
+                createCards();
+                
+                cardsContainer.style.transform = 'scale(1)';
+                cardsContainer.style.opacity = '1';
+            }, 300);
+        });
+
+        // أزرار صح/خطأ
+        document.querySelectorAll('.true-false-buttons .option-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                userAnswer = this.dataset.answer === 'true';
+                document.querySelectorAll('.true-false-buttons .option-btn').forEach(b => {
+                    b.classList.remove('selected');
+                });
+                this.classList.add('selected');
+            });
+        });
+
+        // زر عرض الإجابة
+        showAnswerBtn.addEventListener('click', function() {
+            if (!answerRevealed) {
+                showAnswer();
+            }
+        });
+
+        // زر التالي
+        nextBtn.addEventListener('click', function() {
+            completeChallenge();
+        });
+
+        // عرض الإجابة
+        function showAnswer() {
+            const challenge = challenges[currentChallengeIndex];
+            answerRevealed = true;
+            
+            let isCorrect = false;
+            
+            if (challenge.type === 'true_false') {
+                isCorrect = userAnswer === challenge.correct;
+                
+                // تلوين أزرار صح/خطأ
+                document.querySelectorAll('.true-false-buttons .option-btn').forEach(btn => {
+                    const btnAnswer = btn.dataset.answer === 'true';
+                    if (btnAnswer === challenge.correct) {
+                        btn.classList.add('correct');
+                    } else if (btn.classList.contains('selected') && btnAnswer !== challenge.correct) {
+                        btn.classList.add('incorrect');
+                    }
+                });
+            } else {
+                isCorrect = userAnswer === challenge.correct;
+                
+                // تلوين خيارات الأسئلة
+                document.querySelectorAll('.question-options .option-btn').forEach((btn, index) => {
+                    if (index === challenge.correct) {
+                        btn.classList.add('correct');
+                    } else if (btn.classList.contains('selected') && index !== challenge.correct) {
+                        btn.classList.add('incorrect');
+                    }
+                });
+            }
+            
+            // عرض النتيجة والتفسير
+            resultDisplay.style.display = 'block';
+            resultDisplay.className = `result-display ${isCorrect ? 'correct' : 'incorrect'}`;
+            resultStatus.textContent = isCorrect ? '🎉 إجابة صحيحة!' : '❌ إجابة خاطئة';
+            resultExplanation.textContent = challenge.explanation;
+            
+            // تحديث النقاط
+            if (isCorrect) {
+                totalScore += 3;
+            } else if (userAnswer !== null) {
+                totalScore += 1; // نقطة للمحاولة
+            }
+            
+            // إخفاء زر عرض الإجابة وإظهار زر التالي
+            showAnswerBtn.style.display = 'none';
+            nextBtn.style.display = 'inline-block';
+        }
+
+        // إكمال التحدي
+        function completeChallenge() {
+            completedChallenges.add(currentChallengeIndex);
+            updateDisplay();
+            createCards();
+            modal.style.display = 'none';
+            
+            // التحقق من إنهاء جميع التحديات
+            if (completedChallenges.size === 6) {
+                setTimeout(() => {
+                    showFinalResults();
+                }, 500);
+            }
+        }
+
+
+
+        // إغلاق النافذة
+        closeBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+
+        // إغلاق النافذة بالنقر خارجها
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // تحديث العرض
+        function updateDisplay() {
+            totalScoreElement.textContent = totalScore;
+            completedCountElement.textContent = completedChallenges.size;
+            
+            // تحديث المستوى
+            let level = '';
+            if (totalScore >= 15) level = 'خبيرة 🏆';
+            else if (totalScore >= 12) level = 'متقدمة 🥈';
+            else if (totalScore >= 9) level = 'متوسطة 🥉';
+            else if (totalScore >= 6) level = 'مطورة 📈';
+            else level = 'مبتدئة 🌱';
+            
+            currentLevelElement.textContent = level;
+            
+            // تحديث شريط التقدم
+            const progress = (completedChallenges.size / 6) * 100;
+            progressFill.style.width = progress + '%';
+        }
+
+        // عرض النتائج النهائية
+        function showFinalResults() {
+            let performance = '';
+            let emoji = '';
+            
+            if (totalScore >= 15) {
+                performance = 'ممتاز جداً! أنت خبيرة في التنفيذ والصيانة';
+                emoji = '🏆';
+            } else if (totalScore >= 12) {
+                performance = 'جيد جداً! لديك معرفة قوية بالموضوع';
+                emoji = '🥈';
+            } else if (totalScore >= 9) {
+                performance = 'جيد! تحتاجين لمزيد من التطوير';
+                emoji = '🥉';
+            } else {
+                performance = 'يمكنك التحسن أكثر! استمري في التعلم';
+                emoji = '📚';
+            }
+            
+            alert(`🎉 تهانينا! لقد أكملت جميع التحديات!\n\n${emoji} ${performance}\n\nالنقاط النهائية: ${totalScore}/18 ⭐\n\nشكراً لك على المشاركة الفعالة! 💖`);
+        }
+
+        // تهيئة اللعبة
+        createCards();
+        updateDisplay();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9abb8fc7f36c9359',t:'MTc2NTM1NzMyOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
