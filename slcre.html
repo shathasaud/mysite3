@@ -1,0 +1,2316 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ألعاب تعليمية تفاعلية</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+        body {
+            box-sizing: border-box;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', 'Tajawal', 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100%;
+            width: 100%;
+            padding: 2rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2.5rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .content {
+            padding: 0;
+        }
+
+        .welcome-card {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: linear-gradient(135deg, #f7fafc 0%, #e2e8f0 100%);
+            border-bottom: 4px solid #667eea;
+        }
+
+        .welcome-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+        }
+
+        .welcome-title {
+            font-size: 2.5rem;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .welcome-subtitle {
+            font-size: 2rem;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .welcome-description {
+            font-size: 1.3rem;
+            color: #718096;
+        }
+
+        .game-section {
+            padding: 2.5rem;
+            border-bottom: 3px solid #e2e8f0;
+        }
+
+        .game-section:last-child {
+            border-bottom: none;
+        }
+
+        .level-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .level-title {
+            font-size: 2rem;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .level-description {
+            font-size: 1.1rem;
+            color: #718096;
+        }
+
+        .question-card {
+            margin-bottom: 2.5rem;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .question-number {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.5rem 1.2rem;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .question-text {
+            font-size: 1.5rem;
+            color: #2d3748;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+            font-weight: 600;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .option {
+            background: #f7fafc;
+            border: 3px solid #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            color: #2d3748;
+        }
+
+        .option:hover {
+            border-color: #667eea;
+            transform: translateX(-5px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .option.selected {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+            transform: scale(1.02);
+        }
+
+        .option.correct {
+            background: #48bb78;
+            border-color: #48bb78;
+            color: white;
+            animation: correctPulse 0.6s ease;
+        }
+
+        .option.wrong {
+            background: #f56565;
+            border-color: #f56565;
+            color: white;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .option.disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .feedback {
+            margin-top: 1.5rem;
+            padding: 1.2rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: center;
+            display: none;
+            animation: slideDown 0.4s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .feedback.show {
+            display: block;
+        }
+
+        .feedback.correct {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 2px solid #48bb78;
+        }
+
+        .feedback.wrong {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 2px solid #f56565;
+        }
+
+        .score-display {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1.2rem;
+            background: #f7fafc;
+            border-radius: 12px;
+            font-size: 1.3rem;
+            color: #667eea;
+            font-weight: bold;
+            border: 2px solid #e2e8f0;
+        }
+
+        .matching-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .matching-header h3 {
+            font-size: 1.6rem;
+            color: #2d3748;
+            font-weight: bold;
+        }
+
+        .matching-game {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .column-title {
+            text-align: center;
+            font-size: 1.4rem;
+            color: #667eea;
+            font-weight: bold;
+            padding: 1rem;
+            background: #f7fafc;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .match-item {
+            background: #f7fafc;
+            border: 3px solid #e2e8f0;
+            padding: 1.2rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            color: #2d3748;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .match-item:hover {
+            border-color: #667eea;
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .match-item.selected {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+
+        .match-item.matched {
+            background: #48bb78;
+            border-color: #48bb78;
+            color: white;
+            pointer-events: none;
+        }
+
+        .match-item.wrong-match {
+            background: #f56565;
+            border-color: #f56565;
+            color: white;
+            animation: shake 0.5s ease;
+        }
+
+        .drag-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .drag-header h3 {
+            font-size: 1.6rem;
+            color: #2d3748;
+            font-weight: bold;
+        }
+
+        .items-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: #f7fafc;
+            border-radius: 12px;
+            border: 2px dashed #cbd5e0;
+            min-height: 80px;
+        }
+
+        .drag-item {
+            background: white;
+            border: 3px solid #667eea;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            color: #2d3748;
+            font-weight: 500;
+            user-select: none;
+        }
+
+        .drag-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .drag-item.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+        }
+
+        .drag-item.tap-selected {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .drag-item.correct-place {
+            background: #48bb78;
+            border-color: #48bb78;
+            color: white;
+            cursor: default;
+        }
+
+        .drag-item.wrong-place {
+            background: #f56565;
+            border-color: #f56565;
+            color: white;
+            animation: shake 0.5s ease;
+        }
+
+        .categories-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .category-box {
+            background: #f7fafc;
+            border: 3px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .category-box.drag-over {
+            border-color: #667eea;
+            background: #edf2f7;
+            transform: scale(1.02);
+        }
+
+        .category-title {
+            text-align: center;
+            font-size: 1.3rem;
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .drop-zone {
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            border: 2px dashed #cbd5e0;
+        }
+
+        .drop-zone.has-items {
+            border-style: solid;
+            border-color: #e2e8f0;
+        }
+
+        .check-btn {
+            display: block;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem 3rem;
+            font-size: 1.2rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .check-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .check-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .scenario-card {
+            background: #f7fafc;
+            border: 3px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .scenario-card:hover {
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.15);
+        }
+
+        .scenario-icon {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .scenario-title {
+            font-size: 1.3rem;
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .scenario-text {
+            font-size: 1.2rem;
+            color: #2d3748;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 12px;
+            border-right: 4px solid #667eea;
+        }
+
+        .scenario-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .scenario-option {
+            background: white;
+            border: 3px solid #e2e8f0;
+            padding: 1.2rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.05rem;
+            color: #2d3748;
+            text-align: right;
+        }
+
+        .scenario-option:hover {
+            border-color: #667eea;
+            transform: translateX(-5px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .scenario-option.selected {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+            transform: scale(1.02);
+        }
+
+        .scenario-option.correct {
+            background: #48bb78;
+            border-color: #48bb78;
+            color: white;
+            animation: correctPulse 0.6s ease;
+        }
+
+        .scenario-option.wrong {
+            background: #f56565;
+            border-color: #f56565;
+            color: white;
+            animation: shake 0.5s ease;
+        }
+
+        .scenario-option.disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .riddle-card {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border: 3px solid #667eea;
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin-bottom: 2.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .riddle-card::before {
+            content: '🎭';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            font-size: 8rem;
+            opacity: 0.05;
+            transform: rotate(-15deg);
+        }
+
+        .riddle-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+        }
+
+        .riddle-number {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.5rem 1.2rem;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .riddle-question {
+            font-size: 1.6rem;
+            color: #2d3748;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 12px;
+            border-right: 5px solid #667eea;
+            font-weight: 600;
+            font-style: italic;
+            position: relative;
+        }
+
+        .riddle-question::before {
+            content: '❝';
+            font-size: 3rem;
+            color: #667eea;
+            opacity: 0.3;
+            position: absolute;
+            top: -10px;
+            right: 10px;
+        }
+
+        .hints-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .hint-box {
+            background: white;
+            border: 3px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+            font-size: 1.15rem;
+            color: #2d3748;
+            display: none;
+            animation: slideDown 0.4s ease;
+            border-right: 4px solid #f6ad55;
+        }
+
+        .hint-box.show {
+            display: block;
+        }
+
+        .hint-btn {
+            background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
+            color: white;
+            border: none;
+            padding: 0.9rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin-left: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .hint-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(246, 173, 85, 0.4);
+        }
+
+        .hint-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .riddle-input-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .riddle-input {
+            width: 100%;
+            padding: 1.2rem;
+            font-size: 1.2rem;
+            border: 3px solid #e2e8f0;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-family: 'Cairo', 'Tajawal', 'Segoe UI', Arial, sans-serif;
+            text-align: right;
+            background: white;
+        }
+
+        .riddle-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .riddle-input.correct {
+            border-color: #48bb78;
+            background: #f0fdf4;
+        }
+
+        .riddle-input.wrong {
+            border-color: #f56565;
+            background: #fef2f2;
+            animation: shake 0.5s ease;
+        }
+
+        .riddle-input:disabled {
+            background: #f7fafc;
+            cursor: not-allowed;
+        }
+
+        .riddle-submit-btn {
+            padding: 1rem 2.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            align-self: flex-start;
+        }
+
+        .riddle-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .riddle-submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .riddle-feedback {
+            padding: 1.2rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: center;
+            display: none;
+            animation: slideDown 0.4s ease;
+            margin-top: 1rem;
+        }
+
+        .riddle-feedback.show {
+            display: block;
+        }
+
+        .riddle-feedback.correct {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 2px solid #48bb78;
+        }
+
+        .riddle-feedback.wrong {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 2px solid #f56565;
+        }
+
+        .mobile-only {
+            display: none;
+        }
+
+        .desktop-only {
+            display: inline;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .welcome-title {
+                font-size: 1.8rem;
+            }
+
+            .welcome-subtitle {
+                font-size: 1.5rem;
+            }
+
+            .welcome-description {
+                font-size: 1.1rem;
+            }
+
+            .game-section {
+                padding: 1.5rem;
+            }
+
+            .level-title {
+                font-size: 1.5rem;
+            }
+
+            .question-text {
+                font-size: 1.2rem;
+            }
+
+            .option {
+                padding: 1rem;
+                font-size: 1rem;
+            }
+
+            .matching-game {
+                grid-template-columns: 1fr;
+            }
+
+            .categories-container {
+                grid-template-columns: 1fr;
+            }
+
+            .drag-item {
+                font-size: 1rem;
+                padding: 0.8rem 1.2rem;
+            }
+
+            .riddle-card {
+                padding: 1.5rem;
+            }
+
+            .riddle-question {
+                font-size: 1.3rem;
+            }
+
+            .riddle-input {
+                font-size: 1.1rem;
+            }
+
+            .mobile-only {
+                display: inline;
+            }
+
+            .desktop-only {
+                display: none;
+            }
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <main class="container">
+   <header class="header">
+    <h1 id="main-title">🎮 ألعاب تعليمية تفاعلية</h1>
+   </header>
+   <div class="content">
+    <div class="welcome-card">
+     <div class="welcome-icon">
+      📚
+     </div>
+     <h2 class="welcome-title">مراجعة الوحدة الثانية</h2>
+     <h3 class="welcome-subtitle">دورة حياة النظام</h3>
+     <p class="welcome-description">لمقرر تقنية رقمية 3</p>
+    </div>
+    <div id="level1-section" class="game-section">
+     <div class="level-header">
+      <h2 class="level-title">المستوى 1: اختر الإجابة الصحيحة</h2>
+      <p class="level-description">8 أسئلة — اختيار من متعدد — مستوى سهل</p>
+     </div>
+     <div id="questions-container-1"></div>
+     <div class="score-display">
+      النتيجة: <span id="current-score-1">0</span> من 8
+     </div>
+    </div>
+    <div id="level2-section" class="game-section">
+     <div class="level-header">
+      <h2 class="level-title">المستوى 2: صح أم خطأ؟</h2>
+      <p class="level-description">8 أسئلة — صح أم خطأ — مستوى متوسط</p>
+     </div>
+     <div id="questions-container-2"></div>
+     <div class="score-display">
+      النتيجة: <span id="current-score-2">0</span> من 8
+     </div>
+    </div>
+    <div id="level3-section" class="game-section">
+     <div class="level-header">
+      <h2 class="level-title">المستوى 3: أوجدِ الزوج المتطابق</h2>
+      <p class="level-description">8 أزواج — المطابقة — مستوى متقدم</p>
+     </div>
+     <div id="matching-container">
+      <div class="matching-header">
+       <h3>❶ طابقي العنصر بما يقابله:</h3>
+      </div>
+      <div class="matching-game">
+       <div class="column">
+        <h3 class="column-title">العنصر</h3>
+        <div id="left-column"></div>
+       </div>
+       <div class="column">
+        <h3 class="column-title">يقابله</h3>
+        <div id="right-column"></div>
+       </div>
+      </div>
+     </div>
+     <div class="score-display">
+      النتيجة: <span id="current-score-3">0</span> من 8
+     </div>
+    </div>
+    <div id="level4-section" class="game-section">
+     <div class="level-header">
+      <h2 class="level-title">المستوى 4: اسحبي وافرزي</h2>
+      <p class="level-description">9 عناصر — تصنيف — مهارات تحليلية</p>
+     </div>
+     <div id="drag-drop-container">
+      <div class="drag-header">
+       <h3>❶ صنفي المتطلبات التالية: (وظيفية / غير وظيفية)</h3>
+       <p style="color: #718096; font-size: 1rem; margin-top: 0.5rem;">💡 <span class="desktop-only">اسحبي العنصر إلى الفئة المناسبة</span> <span class="mobile-only">اضغطي على العنصر ثم اضغطي على الفئة المناسبة</span></p>
+      </div>
+      <div class="items-container" id="items-container-1"></div>
+      <div class="categories-container">
+       <div class="category-box" id="category-functional">
+        <h3 class="category-title">✅ متطلبات وظيفية</h3>
+        <div class="drop-zone" id="drop-functional" data-category="functional"></div>
+       </div>
+       <div class="category-box" id="category-non-functional">
+        <h3 class="category-title">⚙️ متطلبات غير وظيفية</h3>
+        <div class="drop-zone" id="drop-non-functional" data-category="non-functional"></div>
+       </div>
+      </div><button class="check-btn" id="check-sorting-btn-1">✔ تحقق من الإجابات</button>
+      <div class="feedback" id="sorting-feedback-1"></div>
+      <div class="drag-header" style="margin-top: 3rem;">
+       <h3>❷ صنّفي البصمة الرقمية: (نشطة / غير نشطة)</h3>
+       <p style="color: #718096; font-size: 1rem; margin-top: 0.5rem;">💡 <span class="desktop-only">اسحبي العنصر إلى الفئة المناسبة</span> <span class="mobile-only">اضغطي على العنصر ثم اضغطي على الفئة المناسبة</span></p>
+      </div>
+      <div class="items-container" id="items-container-2"></div>
+      <div class="categories-container">
+       <div class="category-box" id="category-active">
+        <h3 class="category-title">🟢 بصمة رقمية نشطة</h3>
+        <div class="drop-zone" id="drop-active" data-category="active"></div>
+       </div>
+       <div class="category-box" id="category-passive">
+        <h3 class="category-title">🔵 بصمة رقمية غير نشطة</h3>
+        <div class="drop-zone" id="drop-passive" data-category="passive"></div>
+       </div>
+      </div><button class="check-btn" id="check-sorting-btn-2">✔ تحقق من الإ����ابات</button>
+      <div class="feedback" id="sorting-feedback-2"></div>
+     </div>
+     <div class="score-display">
+      النتيجة الكلية: <span id="current-score-4">0</span> من 11
+     </div>
+    </div>
+    <div id="level5-section" class="game-section">
+     <div class="level-header">
+      <h2 class="level-title">المستوى 5: حلّي اللغز! 🧩</h2>
+      <p class="level-description">6 سيناريوهات — تحليل وذكاء — أسئلة عليا</p>
+     </div>
+     <div id="scenarios-container"></div>
+     <div class="score-display">
+      النتيجة: <span id="current-score-5">0</span> من 6
+     </div>
+    </div>
+    <div id="level6-section" class="game-section">
+     <div class="level-header">
+      <h2 class="level-title">المستوى 6: من أنا�� ��</h2>
+      <p class="level-description">6 ألغاز بالتلميحات — اكتشف المصطلح — تحدي ممتع</p>
+     </div>
+     <div id="riddles-container"></div>
+     <div class="score-display">
+      النتيجة: <span id="current-score-6">0</span> من 6
+     </div>
+    </div>
+    <div id="level7-section" class="game-section">
+     <div class="level-header">
+      <h2 class="level-title">المستوى 7: أكملي الفراغ ✍️</h2>
+      <p class="level-description">7 أسئلة — إكمال — صعوبة مرتفعة</p>
+     </div>
+     <div id="completion-container"></div>
+     <div class="score-display">
+      النتيجة: <span id="current-score-7">0</span> من 7
+     </div>
+    </div>
+    <div id="level8-section" class="game-section">
+     <div class="level-header">
+      <h2 class="level-title">المستوى 8: التحدي الكبير 🔥</h2>
+      <p class="level-description">12 سؤال — اختيار متعدد صعب — المستوى ال��على</p>
+     </div>
+     <div id="questions-container-8"></div>
+     <div class="score-display">
+      النتيجة: <span id="current-score-8">0</span> من 12
+     </div>
+    </div>
+   </div>
+  </main>
+  <script>
+        const defaultConfig = {
+            main_title: "🎮 ألعاب تعليمية تفاعلية",
+            primary_color: "#667eea",
+            secondary_color: "#764ba2"
+        };
+
+        const level1Questions = [
+            {
+                id: 1,
+                question: "المرحلة التي يتم فيها تحديد المشكلة واحتياجات المستخدم هي:",
+                options: [
+                    { text: "أ) التصميم", correct: false },
+                    { text: "ب) التحليل", correct: true },
+                    { text: "ج) التنفيذ", correct: false }
+                ]
+            },
+            {
+                id: 2,
+                question: "الرمز الذي يمثل قرارًا في مخطط سير العمل هو:",
+                options: [
+                    { text: "أ) مستطيل", correct: false },
+                    { text: "ب) معين", correct: true },
+                    { text: "ج) شبه منحرف", correct: false }
+                ]
+            },
+            {
+                id: 3,
+                question: "البصمة الرقمية النشطة تنتج من:",
+                options: [
+                    { text: "أ) التعليقات والمنشورات", correct: true },
+                    { text: "ب) تتبع الموقع الجغرافي", correct: false },
+                    { text: "ج) تتبع الإعلانات", correct: false }
+                ]
+            },
+            {
+                id: 4,
+                question: "أذونات Full Control تعني:",
+                options: [
+                    { text: "أ) القراءة فقط", correct: false },
+                    { text: "ب) القراءة والتعديل", correct: false },
+                    { text: "ج) التحكم الكامل", correct: true }
+                ]
+            },
+            {
+                id: 5,
+                question: "جدار الحماية وظيفته الأساسية:",
+                options: [
+                    { text: "أ) حذف الفيروسات", correct: false },
+                    { text: "ب) مراقبة حركة المرور ومنع الدخول غير المصرح", correct: true },
+                    { text: "ج) تحديد الموقع الجغرافي", correct: false }
+                ]
+            },
+            {
+                id: 6,
+                question: "أي من التالي يُعد من أدوات تحليل النظام؟",
+                options: [
+                    { text: "أ) المقابلات والاستبيانات", correct: true },
+                    { text: "ب) لغات البرمجة", correct: false },
+                    { text: "ج) قواعد البيانات", correct: false }
+                ]
+            },
+            {
+                id: 7,
+                question: "المخطط الذي يوضح العلاقة بين المستخدم والنظام هو:",
+                options: [
+                    { text: "أ) مخطط حالة الاستخدام", correct: true },
+                    { text: "ب) مخطط سير العمل", correct: false },
+                    { text: "ج) مخطط الشجرة", correct: false }
+                ]
+            },
+            {
+                id: 8,
+                question: "الحساب الذي يمنح أعلى صلاحيات في Windows هو:",
+                options: [
+                    { text: "أ) الحساب المحلي", correct: false },
+                    { text: "ب) حساب المسؤول المدمج", correct: true },
+                    { text: "ج) حساب الضيف", correct: false }
+                ]
+            }
+        ];
+
+        const level2Questions = [
+            {
+                id: 1,
+                question: "مخطط سير العمل يساعد في تبسيط العمليات المعقدة",
+                options: [
+                    { text: "✔ صح", correct: true },
+                    { text: "✘ خطأ", correct: false }
+                ]
+            },
+            {
+                id: 2,
+                question: "مخطط حالة الاستخدام يوضح الوظائف الداخلية للنظام فقط",
+                options: [
+                    { text: "✔ صح", correct: false },
+                    { text: "✘ خطأ", correct: true }
+                ]
+            },
+            {
+                id: 3,
+                question: "البصمة الرقمية غير النشطة تنتج دون علم المستخدم",
+                options: [
+                    { text: "✔ صح", correct: true },
+                    { text: "✘ خطأ", correct: false }
+                ]
+            },
+            {
+                id: 4,
+                question: "يمكن لجدار الحماية اكتشاف جميع الفيروسات",
+                options: [
+                    { text: "✔ صح", correct: false },
+                    { text: "✘ خطأ", correct: true }
+                ]
+            },
+            {
+                id: 5,
+                question: "حساب المستخدم الإداري يمنح صلاحيات أكبر من الحساب المحلي",
+                options: [
+                    { text: "✔ صح", correct: true },
+                    { text: "✘ خطأ", correct: false }
+                ]
+            },
+            {
+                id: 6,
+                question: "مرحلة التصميم تأتي قبل مرحلة التحليل في دورة حياة النظام",
+                options: [
+                    { text: "✔ صح", correct: false },
+                    { text: "✘ خطأ", correct: true }
+                ]
+            },
+            {
+                id: 7,
+                question: "يمكن تحرير أذونات الملفات في حساب الضيف",
+                options: [
+                    { text: "✔ صح", correct: false },
+                    { text: "✘ خطأ", correct: true }
+                ]
+            },
+            {
+                id: 8,
+                question: "الرمز البيضاوي يستخدم للإشارة إلى البداية أو النهاية في مخطط سير العمل",
+                options: [
+                    { text: "✔ صح", correct: true },
+                    { text: "✘ خطأ", correct: false }
+                ]
+            }
+        ];
+
+        const matchingPairs = [
+            { id: 1, left: "مخطط سير العمل", right: "تمثيل تدفق المهام" },
+            { id: 2, left: "مخطط الشجرة", right: "تمثيل الهيكل الهرمي" },
+            { id: 3, left: "Wireframe", right: "تصميم واجهات الموقع" },
+            { id: 4, left: "Full Control", right: "القراءة والكتابة والتعديل والحذف" },
+            { id: 5, left: "Active footprint", right: "المنشورات والتعليقات" },
+            { id: 6, left: "مرحلة التحليل", right: "تحديد المشكلة والاحتياجات" },
+            { id: 7, left: "Administrator Account", right: "حساب بصلاحيات كاملة" },
+            { id: 8, left: "رمز المستطيل", right: "عملية أو إجراء في سير العمل" }
+        ];
+
+        const dragDropItems1 = [
+            { id: 1, text: "إمكانية البحث في محتوى النظام", category: "functional" },
+            { id: 2, text: "سرعة استجابة النظام", category: "non-functional" },
+            { id: 3, text: "إصدار تقارير مختلفة", category: "functional" },
+            { id: 4, text: "سهولة الاستخدام", category: "non-functional" },
+            { id: 5, text: "التوافق مع الأجهزة المختلفة", category: "non-functional" },
+            { id: 6, text: "إضافة وحذف المنتجات", category: "functional" },
+            { id: 7, text: "أمان البيانات والخصوصية", category: "non-functional" }
+        ];
+
+        const dragDropItems2 = [
+            { id: 1, text: "مشاركة منشور على تويتر", category: "active" },
+            { id: 2, text: "تتبع الموقع الجغرافي للهاتف", category: "passive" },
+            { id: 3, text: "التعليق على فيديو", category: "active" },
+            { id: 4, text: "حفظ سجلات الموقع دون علم المستخدم", category: "passive" },
+            { id: 5, text: "الإعجاب بصورة على إنستغرام", category: "active" },
+            { id: 6, text: "تخزين ملفات تعريف الارتباط (Cookies)", category: "passive" }
+        ];
+
+        const scenarios = [
+            {
+                id: 1,
+                icon: "🎨",
+                title: "سيناريو 1: مشكلة في التصميم",
+                text: "مصممة تطبيق تواجه مشكلة: بعض المستخدمين لا يستطيعون الضغط على الأزرار لصغر حجمها. ما المرحلة التي يجب تحسينها؟",
+                options: [
+                    { text: "التحليل + التصميم (تصميم واجهة مناسبة للمس��خدمين ذوي الاح��ياجات الخاصة)", correct: true },
+                    { text: "مرحلة التنفيذ فقط", correct: false },
+                    { text: "مرحلة الصيانة فقط", correct: false },
+                    { text: "لا حاجة لتغيير أي مرحلة", correct: false }
+                ]
+            },
+            {
+                id: 2,
+                icon: "🔐",
+                title: "سيناريو 2: ثغرة أمنية",
+                text: "أثناء تطوير نظام مدرسي، تم اكتشاف وجود بيانات حساسة غير محمية. أي خطوة أمن سيبراني يجب اتخاذها؟",
+                options: [
+                    { text: "تطبيق معايير التشفير + مراجعة الصلاحيات", correct: true },
+                    { text: "تجاهل المشكلة لأنها داخلية", correct: false },
+                    { text: "حذف البيانات نهائيًا", correct: false },
+                    { text: "نشر تحذير للمستخدمين فقط", correct: false }
+                ]
+            },
+            {
+                id: 3,
+                icon: "💼",
+                title: "سيناريو 3: تسريب معلومات",
+                text: "مؤسسة تعرضت لتشويه سمعة عبر تسريب معلومات موظفيها. ما نوع التأثير؟",
+                options: [
+                    { text: "إدارة السمعة (Reputation Management)", correct: true },
+                    { text: "خسارة مالية فقط", correct: false },
+                    { text: "مشكلة تقنية بسيطة", correct: false },
+                    { text: "لا يوجد تأثير", correct: false }
+                ]
+            },
+            {
+                id: 4,
+                icon: "📊",
+                title: "سيناريو 4: مخطط سير العمل",
+                text: "إذا أراد النظام معرفة \"هل وافق العميل؟ نعم/لا\" — أي رمز يجب استخدامه؟",
+                options: [
+                    { text: "رمز القرار (معين ◇)", correct: true },
+                    { text: "مستطيل", correct: false },
+                    { text: "دائرة", correct: false },
+                    { text: "شبه منحرف", correct: false }
+                ]
+            },
+            {
+                id: 5,
+                icon: "👥",
+                title: "سيناريو 5: اختيار أداة التحليل",
+                text: "محللة نظام تريد فهم سلوك المستخدمين الفعلي دون التدخل. أي أداة الأنسب؟",
+                options: [
+                    { text: "الملاحظة المباشرة", correct: true },
+                    { text: "الاستبيانات الإلكترونية", correct: false },
+                    { text: "المقابلات الهاتفية", correct: false },
+                    { text: "قراءة الوثائق فقط", correct: false }
+                ]
+            },
+            {
+                id: 6,
+                icon: "🛡️",
+                title: "سيناريو 6: اختيار الحساب المناسب",
+                text: "موظف جديد يحتاج استخدام جهاز مشترك لمهام بسيطة فقط دون تثبيت برامج. أي حساب الأنسب؟",
+                options: [
+                    { text: "حساب الضيف (Guest Account)", correct: true },
+                    { text: "حساب المسؤول المدمج", correct: false },
+                    { text: "حساب المسؤول المحلي", correct: false },
+                    { text: "حساب Microsoft", correct: false }
+                ]
+            }
+        ];
+
+        const riddles = [
+            {
+                id: 1,
+                hints: [
+                    "💡 التلميح 1: أنا نوع من المخططات",
+                    "💡 التلميح 2: أوضح العلاقة بين المستخدم والنظام",
+                    "💡 التلميح 3: أستخدم لتوثيق وظائف النظام",
+                    "💡 التلميح 4: أحتوي على ممثلين وحالات",
+                    "💡 التلميح النهائي: اسمي يبدأ بـ 'مخطط حالة...'"
+                ],
+                answer: "مخطط حالة الاستخدام"
+            },
+            {
+                id: 2,
+                hints: [
+                    "💡 التلميح 1: أنا نوع من البصمات الرقمية",
+                    "💡 التلميح 2: أحدث دون علمك أو موافقتك",
+                    "💡 التلميح 3: مثل تتبع الموقع الجغرافي وملفات تعريف الارتباط",
+                    "💡 التلميح 4: عكس البصمة النشطة",
+                    "💡 التلميح النهائي: اسمي 'البصمة الرقمية...'"
+                ],
+                answer: "البصمة الرقمية غير النشطة"
+            },
+            {
+                id: 3,
+                hints: [
+                    "💡 التلميح 1: أنا أداة أمنية",
+                    "💡 التلميح 2: أراقب حركة المرور على الشبكة",
+                    "💡 التلميح 3: أمنع الاتصالات غير المصرح بها",
+                    "💡 التلميح 4: لا أحذف الفيروسات لكن أمنع دخولها",
+                    "💡 التلميح النهائي: اسمي يبدأ بـ 'جدار...'"
+                ],
+                answer: "جدار الحماية"
+            },
+            {
+                id: 4,
+                hints: [
+                    "💡 التلميح 1: أنا نوع من الأذونات في Windows",
+                    "💡 التلميح 2: أسمح بتغيير محتوى الملفات",
+                    "💡 التلميح 3: أقل من Full Control وأكثر من Read",
+                    "💡 التلميح 4: أسمح بالكتابة والتحرير",
+                    "💡 التلميح النهائي: اسمي بالعربية يعني 'التغيير'"
+                ],
+                answer: "التعديل"
+            },
+            {
+                id: 5,
+                hints: [
+                    "💡 التلميح 1: أنا إحدى مراحل دورة حياة النظام",
+                    "💡 التلميح 2: أبدأ بعد نشر النظام",
+                    "💡 التلميح 3: أستمر طوال عمر النظام",
+                    "💡 التلميح 4: أتضمن التحديثات وإصلاح الأخطاء",
+                    "💡 التلميح النهائي: اسمي يعني 'الحفاظ على النظام'"
+                ],
+                answer: "الصيانة"
+            },
+            {
+                id: 6,
+                hints: [
+                    "💡 التلميح 1: أنا رمز في مخطط سير العمل",
+                    "💡 التلميح 2: شكلي هندسي بسيط",
+                    "💡 التلميح 3: أستخدم مرتين في كل مخطط",
+                    "💡 التلميح 4: أشير للبداية أو النهاية",
+                    "💡 التلميح النهائي: شكلي يشبه البيضة"
+                ],
+                answer: "البيضاوي"
+            }
+        ];
+
+        const completionQuestions = [
+            {
+                id: 1,
+                question: "المرحلة التي يتم فيها اختبار وظائف النظام وتجربة الاستخدام تسمى:",
+                blanks: 1,
+                answers: ["الاختبار", "Testing"]
+            },
+            {
+                id: 2,
+                question: "يمثل الشكل البيضاوي في مخطط سير العمل:",
+                blanks: 1,
+                answers: ["البداية أو النهاية", "البداية والنهاية", "بداية أو نهاية"]
+            },
+            {
+                id: 3,
+                question: "من أمثلة البيانات التي يسجلها خادم الإنترنت:",
+                blanks: 2,
+                answers: [
+                    ["عنوان IP", "ip", "عنوان الاي بي", "ip address"],
+                    ["وقت الاتصال", "الوقت", "زمن الاتصال", "تاريخ الاتصال"]
+                ]
+            },
+            {
+                id: 4,
+                question: "البصمة الرقمية تتكوّن من نوعين هما:",
+                blanks: 2,
+                answers: [
+                    ["نشطة", "نشط", "active"],
+                    ["غير نشطة", "غير نشط", "passive"]
+                ]
+            },
+            {
+                id: 5,
+                question: "حساب Windows الذي يمنح جميع الصلاحيات هو:",
+                blanks: 1,
+                answers: ["حساب المسؤول المدمج", "المسؤول المدمج", "حساب المسؤول", "المسؤول", "administrator"]
+            },
+            {
+                id: 6,
+                question: "أداة التحليل التي تعطي معلومات واقعية لكنها الأكثر تكلفة هي:",
+                blanks: 1,
+                answers: ["الملاحظة", "الملاحظة المباشرة", "observation"]
+            },
+            {
+                id: 7,
+                question: "الهدف الرئيسي من مرحلة التحليل هو:",
+                blanks: 1,
+                answers: ["تحديد المشكلة", "تحديد الاحتياجات", "فهم المشكلة", "تحديد احتياجات المستخدم"]
+            }
+        ];
+
+        const level8Questions = [
+            {
+                id: 1,
+                question: "ما هي المرحلة التي يتم فيها تحويل التصميم إلى كود برمجي فعلي؟",
+                options: [
+                    { text: "أ) مرحلة التحليل", correct: false },
+                    { text: "ب) مرحلة التنفيذ (Implementation)", correct: true },
+                    { text: "ج) مرحلة الاختبار", correct: false }
+                ]
+            },
+            {
+                id: 2,
+                question: "في مخطط حالة الاستخدام، ما الذي يُمثل الدائرة البيضاوية؟",
+                options: [
+                    { text: "أ) المستخدم (Actor)", correct: false },
+                    { text: "ب) حالة الاستخدام (Use Case)", correct: true },
+                    { text: "ج) حدود النظام", correct: false }
+                ]
+            },
+            {
+                id: 3,
+                question: "أي من الأذونات التالية تسمح بالقراءة والكتابة ولكن بدون حذف الملفات؟",
+                options: [
+                    { text: "أ) Read", correct: false },
+                    { text: "ب) Modify (التعديل)", correct: true },
+                    { text: "ج) Full Control", correct: false }
+                ]
+            },
+            {
+                id: 4,
+                question: "ما الفرق الرئيسي بين حساب Microsoft وحساب المسؤول المحلي؟",
+                options: [
+                    { text: "أ) حساب Microsoft مرتبط بالإنترنت ويمكن استخدامه على أجهزة متعددة", correct: true },
+                    { text: "ب) حساب Microsoft لا يمنح أي صلاحيات إدارية", correct: false },
+                    { text: "ج) لا يوجد فرق بينهما", correct: false }
+                ]
+            },
+            {
+                id: 5,
+                question: "في سياق الأمن السيبراني، ما المقصود بـ 'التشفير' (Encryption)؟",
+                options: [
+                    { text: "أ) حذف البيانات الحساسة نهائيًا", correct: false },
+                    { text: "ب) تحويل البيانات إلى صيغة غير مقروءة لحمايتها", correct: true },
+                    { text: "ج) نسخ احتياطي للبيانات", correct: false }
+                ]
+            },
+            {
+                id: 6,
+                question: "أي أداة من أدوات جمع المتطلبات توفر بيانات كمية من عدد كبير من المستخدمين؟",
+                options: [
+                    { text: "أ) المقابلات الشخصية", correct: false },
+                    { text: "ب) الاستبيانات الإلكترونية", correct: true },
+                    { text: "ج) الملاحظة المباشرة", correct: false }
+                ]
+            },
+            {
+                id: 7,
+                question: "في مخطط سير العمل، ماذا يمثل الرمز المتوازي الأضلاع (شبه المنحرف)؟",
+                options: [
+                    { text: "أ) قرار أو شرط", correct: false },
+                    { text: "ب) إدخال أو إخراج بيانات (Input/Output)", correct: true },
+                    { text: "ج) عملية معالجة", correct: false }
+                ]
+            },
+            {
+                id: 8,
+                question: "ما الهدف الرئيسي من مرحلة الصيانة في دورة حياة النظام؟",
+                options: [
+                    { text: "أ) بناء النظام من الصفر", correct: false },
+                    { text: "ب) إصلاح الأخطاء وتحديث النظام بعد النشر", correct: true },
+                    { text: "ج) تحديد متطلبات المستخدمين", correct: false }
+                ]
+            },
+            {
+                id: 9,
+                question: "أي مما يلي يُعتبر مثالاً على البصمة الرقمية غير النشطة؟",
+                options: [
+                    { text: "أ) نشر صورة على فيسبوك", correct: false },
+                    { text: "ب) إرسال بريد إلكتروني", correct: false },
+                    { text: "ج) تتبع عنوان IP أثناء التصفح", correct: true }
+                ]
+            },
+            {
+                id: 10,
+                question: "ما وظيفة 'جدار الحماية' (Firewall) الأساسية؟",
+                options: [
+                    { text: "أ) حذف الفيروسات من الجهاز", correct: false },
+                    { text: "ب) التحكم في حركة البيانات بين الشبكات ومنع الوصول غير المصرح به", correct: true },
+                    { text: "ج) تسريع الإنترنت", correct: false }
+                ]
+            },
+            {
+                id: 11,
+                question: "في عملية تطوير النظام، متى يتم إنشاء 'Wireframe' (الإطار السلكي)؟",
+                options: [
+                    { text: "أ) مرحلة التحليل", correct: false },
+                    { text: "ب) مرحلة التصميم", correct: true },
+                    { text: "ج) مرحلة الصيانة", correct: false }
+                ]
+            },
+            {
+                id: 12,
+                question: "أي نوع من الحسابات لا يمكنه تثبيت البرامج أو تغيير إعدادات النظام؟",
+                options: [
+                    { text: "أ) حساب المسؤول المدمج", correct: false },
+                    { text: "ب) حساب الضيف (Guest Account)", correct: true },
+                    { text: "ج) حساب المستخدم الإداري", correct: false }
+                ]
+            }
+        ];
+
+        let score1 = 0;
+        let score2 = 0;
+        let score3 = 0;
+        let score4 = 0;
+        let score5 = 0;
+        let score6 = 0;
+        let score7 = 0;
+        let score8 = 0;
+        let selectedLeft = null;
+        let selectedRight = null;
+        let matchedPairs = [];
+        let draggedElement = null;
+        let checkedSorting = false;
+        let selectedItemForTap = null;
+
+        const riddleStates = riddles.map(() => ({ currentHint: 0, solved: false }));
+
+        function renderLevel1Questions() {
+            const container = document.getElementById('questions-container-1');
+            container.innerHTML = '';
+
+            level1Questions.forEach((q, index) => {
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                card.innerHTML = `
+                    <div class="question-number">السؤال ${index + 1} من ${level1Questions.length}</div>
+                    <h3 class="question-text">${q.question}</h3>
+                    <div class="options">
+                        ${q.options.map((opt, optIndex) => `
+                            <div class="option" data-level="1" data-question="${index}" data-correct="${opt.correct}">
+                                ${opt.text}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="feedback" id="feedback-1-${index}"></div>
+                `;
+                container.appendChild(card);
+            });
+
+            attachOptionListeners(1);
+        }
+
+        function renderLevel2Questions() {
+            const container = document.getElementById('questions-container-2');
+            container.innerHTML = '';
+
+            level2Questions.forEach((q, index) => {
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                card.innerHTML = `
+                    <div class="question-number">السؤال ${index + 1} من ${level2Questions.length}</div>
+                    <h3 class="question-text">${q.question}</h3>
+                    <div class="options">
+                        ${q.options.map((opt, optIndex) => `
+                            <div class="option" data-level="2" data-question="${index}" data-correct="${opt.correct}">
+                                ${opt.text}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="feedback" id="feedback-2-${index}"></div>
+                `;
+                container.appendChild(card);
+            });
+
+            attachOptionListeners(2);
+        }
+
+        function renderLevel8Questions() {
+            const container = document.getElementById('questions-container-8');
+            container.innerHTML = '';
+
+            level8Questions.forEach((q, index) => {
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                card.innerHTML = `
+                    <div class="question-number">سؤال التحدي ${index + 1} من ${level8Questions.length}</div>
+                    <h3 class="question-text">${q.question}</h3>
+                    <div class="options">
+                        ${q.options.map((opt, optIndex) => `
+                            <div class="option" data-level="8" data-question="${index}" data-correct="${opt.correct}">
+                                ${opt.text}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="feedback" id="feedback-8-${index}"></div>
+                `;
+                container.appendChild(card);
+            });
+
+            attachOptionListeners(8);
+        }
+
+        function attachOptionListeners(level) {
+            const options = document.querySelectorAll(`.option[data-level="${level}"]`);
+            options.forEach(option => {
+                option.addEventListener('click', handleOptionClick);
+            });
+        }
+
+        function handleOptionClick(e) {
+            const option = e.currentTarget;
+            const level = option.dataset.level;
+            const questionIndex = parseInt(option.dataset.question);
+            const isCorrect = option.dataset.correct === 'true';
+
+            const allOptions = option.parentElement.querySelectorAll('.option');
+            if ([...allOptions].some(opt => opt.classList.contains('disabled'))) return;
+
+            allOptions.forEach(opt => {
+                opt.classList.add('disabled');
+                if (opt.dataset.correct === 'true') {
+                    opt.classList.add('correct');
+                }
+            });
+
+            const feedback = document.getElementById(`feedback-${level}-${questionIndex}`);
+
+            if (isCorrect) {
+                option.classList.add('selected');
+                feedback.textContent = '🎉 إجابة صحيحة! ممتاز!';
+                feedback.className = 'feedback correct show';
+                
+                if (level === '1') {
+                    score1++;
+                    document.getElementById('current-score-1').textContent = score1;
+                } else if (level === '2') {
+                    score2++;
+                    document.getElementById('current-score-2').textContent = score2;
+                } else if (level === '8') {
+                    score8++;
+                    document.getElementById('current-score-8').textContent = score8;
+                }
+            } else {
+                option.classList.add('wrong');
+                feedback.textContent = '❌ إجابة خاطئة. الإجابة الصحيحة موضحة باللون الأخضر!';
+                feedback.className = 'feedback wrong show';
+            }
+        }
+
+        function renderMatchingGame() {
+            const leftColumn = document.getElementById('left-column');
+            const rightColumn = document.getElementById('right-column');
+            
+            leftColumn.innerHTML = '';
+            rightColumn.innerHTML = '';
+
+            const shuffledRight = [...matchingPairs].sort(() => Math.random() - 0.5);
+
+            matchingPairs.forEach(pair => {
+                const leftItem = document.createElement('div');
+                leftItem.className = 'match-item';
+                leftItem.textContent = pair.left;
+                leftItem.dataset.id = pair.id;
+                leftItem.dataset.side = 'left';
+                leftItem.addEventListener('click', handleMatchClick);
+                leftColumn.appendChild(leftItem);
+            });
+
+            shuffledRight.forEach(pair => {
+                const rightItem = document.createElement('div');
+                rightItem.className = 'match-item';
+                rightItem.textContent = pair.right;
+                rightItem.dataset.id = pair.id;
+                rightItem.dataset.side = 'right';
+                rightItem.addEventListener('click', handleMatchClick);
+                rightColumn.appendChild(rightItem);
+            });
+        }
+
+        function handleMatchClick(e) {
+            const item = e.currentTarget;
+            const side = item.dataset.side;
+
+            if (item.classList.contains('matched')) return;
+
+            if (side === 'left') {
+                if (selectedLeft) {
+                    selectedLeft.classList.remove('selected');
+                }
+                selectedLeft = item;
+                item.classList.add('selected');
+            } else {
+                if (selectedRight) {
+                    selectedRight.classList.remove('selected');
+                }
+                selectedRight = item;
+                item.classList.add('selected');
+            }
+
+            if (selectedLeft && selectedRight) {
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            const leftId = selectedLeft.dataset.id;
+            const rightId = selectedRight.dataset.id;
+
+            if (leftId === rightId) {
+                selectedLeft.classList.remove('selected');
+                selectedRight.classList.remove('selected');
+                selectedLeft.classList.add('matched');
+                selectedRight.classList.add('matched');
+                
+                matchedPairs.push(leftId);
+                score3++;
+                document.getElementById('current-score-3').textContent = score3;
+
+                selectedLeft = null;
+                selectedRight = null;
+            } else {
+                selectedLeft.classList.add('wrong-match');
+                selectedRight.classList.add('wrong-match');
+
+                setTimeout(() => {
+                    selectedLeft.classList.remove('wrong-match', 'selected');
+                    selectedRight.classList.remove('wrong-match', 'selected');
+                    selectedLeft = null;
+                    selectedRight = null;
+                }, 800);
+            }
+        }
+
+        function renderScenarios() {
+            const container = document.getElementById('scenarios-container');
+            container.innerHTML = '';
+
+            scenarios.forEach((scenario, index) => {
+                const card = document.createElement('div');
+                card.className = 'scenario-card';
+                card.innerHTML = `
+                    <div class="scenario-icon">${scenario.icon}</div>
+                    <h3 class="scenario-title">${scenario.title}</h3>
+                    <div class="scenario-text">${scenario.text}</div>
+                    <div class="scenario-options">
+                        ${scenario.options.map((opt, optIndex) => `
+                            <div class="scenario-option" data-scenario="${index}" data-correct="${opt.correct}">
+                                ${opt.text}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="feedback" id="scenario-feedback-${index}"></div>
+                `;
+                container.appendChild(card);
+            });
+
+            attachScenarioListeners();
+        }
+
+        function attachScenarioListeners() {
+            const options = document.querySelectorAll('.scenario-option');
+            options.forEach(option => {
+                option.addEventListener('click', handleScenarioClick);
+            });
+        }
+
+        function handleScenarioClick(e) {
+            const option = e.currentTarget;
+            const scenarioIndex = parseInt(option.dataset.scenario);
+            const isCorrect = option.dataset.correct === 'true';
+
+            const allOptions = option.parentElement.querySelectorAll('.scenario-option');
+            if ([...allOptions].some(opt => opt.classList.contains('disabled'))) return;
+
+            allOptions.forEach(opt => {
+                opt.classList.add('disabled');
+                if (opt.dataset.correct === 'true') {
+                    opt.classList.add('correct');
+                }
+            });
+
+            const feedback = document.getElementById(`scenario-feedback-${scenarioIndex}`);
+
+            if (isCorrect) {
+                option.classList.add('selected');
+                feedback.textContent = '🎉 تحليل ممتاز! إجابة صحيحة!';
+                feedback.className = 'feedback correct show';
+                score5++;
+                document.getElementById('current-score-5').textContent = score5;
+            } else {
+                option.classList.add('wrong');
+                feedback.textContent = '❌ حاولي التفكير أكثر. الإجابة الصحيحة موضحة باللون الأخضر!';
+                feedback.className = 'feedback wrong show';
+            }
+        }
+
+        function renderDragDropGame() {
+            const container1 = document.getElementById('items-container-1');
+            const container2 = document.getElementById('items-container-2');
+            container1.innerHTML = '';
+            container2.innerHTML = '';
+
+            const shuffledItems1 = [...dragDropItems1].sort(() => Math.random() - 0.5);
+            const shuffledItems2 = [...dragDropItems2].sort(() => Math.random() - 0.5);
+
+            shuffledItems1.forEach(item => {
+                const dragItem = document.createElement('div');
+                dragItem.className = 'drag-item';
+                dragItem.textContent = item.text;
+                dragItem.draggable = true;
+                dragItem.dataset.id = item.id;
+                dragItem.dataset.category = item.category;
+                dragItem.dataset.question = '1';
+
+                dragItem.addEventListener('dragstart', handleDragStart);
+                dragItem.addEventListener('dragend', handleDragEnd);
+                dragItem.addEventListener('click', handleItemTap);
+
+                container1.appendChild(dragItem);
+            });
+
+            shuffledItems2.forEach(item => {
+                const dragItem = document.createElement('div');
+                dragItem.className = 'drag-item';
+                dragItem.textContent = item.text;
+                dragItem.draggable = true;
+                dragItem.dataset.id = item.id;
+                dragItem.dataset.category = item.category;
+                dragItem.dataset.question = '2';
+
+                dragItem.addEventListener('dragstart', handleDragStart);
+                dragItem.addEventListener('dragend', handleDragEnd);
+                dragItem.addEventListener('click', handleItemTap);
+
+                container2.appendChild(dragItem);
+            });
+
+            setupDropZones();
+        }
+
+        function setupDropZones() {
+            const dropZones = document.querySelectorAll('.drop-zone');
+            dropZones.forEach(zone => {
+                zone.addEventListener('dragover', handleDragOver);
+                zone.addEventListener('drop', handleDrop);
+                zone.addEventListener('dragleave', handleDragLeave);
+                zone.addEventListener('click', handleZoneTap);
+            });
+
+            const categoryBoxes = document.querySelectorAll('.category-box');
+            categoryBoxes.forEach(box => {
+                box.addEventListener('dragover', handleDragOver);
+                box.addEventListener('drop', handleDrop);
+                box.addEventListener('dragleave', handleDragLeave);
+                box.addEventListener('click', handleZoneTap);
+            });
+        }
+
+        function handleDragStart(e) {
+            draggedElement = e.target;
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            
+            if (e.target.classList.contains('category-box')) {
+                e.target.classList.add('drag-over');
+            } else if (e.target.closest('.category-box')) {
+                e.target.closest('.category-box').classList.add('drag-over');
+            }
+        }
+
+        function handleDragLeave(e) {
+            if (e.target.classList.contains('category-box')) {
+                e.target.classList.remove('drag-over');
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            
+            document.querySelectorAll('.category-box').forEach(box => {
+                box.classList.remove('drag-over');
+            });
+
+            if (!draggedElement) return;
+
+            let dropZone;
+            if (e.target.classList.contains('drop-zone')) {
+                dropZone = e.target;
+            } else if (e.target.closest('.drop-zone')) {
+                dropZone = e.target.closest('.drop-zone');
+            } else if (e.target.classList.contains('category-box')) {
+                dropZone = e.target.querySelector('.drop-zone');
+            } else if (e.target.closest('.category-box')) {
+                dropZone = e.target.closest('.category-box').querySelector('.drop-zone');
+            }
+
+            if (dropZone) {
+                dropZone.appendChild(draggedElement);
+                dropZone.classList.add('has-items');
+                
+                if (checkedSorting) {
+                    draggedElement.classList.remove('correct-place', 'wrong-place');
+                    checkedSorting = false;
+                    document.getElementById('sorting-feedback').classList.remove('show');
+                }
+            }
+
+            draggedElement = null;
+        }
+
+        function handleItemTap(e) {
+            const item = e.currentTarget;
+            
+            if (item.classList.contains('correct-place')) {
+                return;
+            }
+
+            if (selectedItemForTap && selectedItemForTap !== item) {
+                selectedItemForTap.classList.remove('tap-selected');
+            }
+
+            if (selectedItemForTap === item) {
+                item.classList.remove('tap-selected');
+                selectedItemForTap = null;
+            } else {
+                item.classList.add('tap-selected');
+                selectedItemForTap = item;
+            }
+        }
+
+        function handleZoneTap(e) {
+            if (!selectedItemForTap) return;
+
+            let dropZone;
+            if (e.target.classList.contains('drop-zone')) {
+                dropZone = e.target;
+            } else if (e.target.closest('.drop-zone')) {
+                dropZone = e.target.closest('.drop-zone');
+            } else if (e.target.classList.contains('category-box')) {
+                dropZone = e.target.querySelector('.drop-zone');
+            } else if (e.target.closest('.category-box')) {
+                dropZone = e.target.closest('.category-box').querySelector('.drop-zone');
+            }
+
+            if (dropZone && selectedItemForTap) {
+                dropZone.appendChild(selectedItemForTap);
+                dropZone.classList.add('has-items');
+                
+                selectedItemForTap.classList.remove('tap-selected', 'correct-place', 'wrong-place');
+                selectedItemForTap = null;
+
+                const feedback1 = document.getElementById('sorting-feedback-1');
+                const feedback2 = document.getElementById('sorting-feedback-2');
+                if (feedback1) feedback1.classList.remove('show');
+                if (feedback2) feedback2.classList.remove('show');
+            }
+        }
+
+        function checkSorting1() {
+            const functionalZone = document.getElementById('drop-functional');
+            const nonFunctionalZone = document.getElementById('drop-non-functional');
+            
+            const functionalItems = functionalZone.querySelectorAll('.drag-item[data-question="1"]');
+            const nonFunctionalItems = nonFunctionalZone.querySelectorAll('.drag-item[data-question="1"]');
+            
+            let correct = 0;
+            let total = dragDropItems1.length;
+
+            functionalItems.forEach(item => {
+                if (item.dataset.category === 'functional') {
+                    item.classList.add('correct-place');
+                    item.classList.remove('wrong-place');
+                    correct++;
+                } else {
+                    item.classList.add('wrong-place');
+                    item.classList.remove('correct-place');
+                }
+            });
+
+            nonFunctionalItems.forEach(item => {
+                if (item.dataset.category === 'non-functional') {
+                    item.classList.add('correct-place');
+                    item.classList.remove('wrong-place');
+                    correct++;
+                } else {
+                    item.classList.add('wrong-place');
+                    item.classList.remove('correct-place');
+                }
+            });
+
+            const feedback = document.getElementById('sorting-feedback-1');
+            if (correct === total) {
+                feedback.textContent = '🎉 ممتاز! جميع التصنيفات ��حيحة!';
+                feedback.className = 'feedback correct show';
+            } else {
+                feedback.textContent = `✨ ${correct} من ${total} صحيحة. العناصر الخضراء في المكان ال��حيح، ��الحمراء في المكان الخاطئ!`;
+                feedback.className = 'feedback wrong show';
+            }
+
+            updateTotalScore();
+        }
+
+        function checkSorting2() {
+            const activeZone = document.getElementById('drop-active');
+            const passiveZone = document.getElementById('drop-passive');
+            
+            const activeItems = activeZone.querySelectorAll('.drag-item[data-question="2"]');
+            const passiveItems = passiveZone.querySelectorAll('.drag-item[data-question="2"]');
+            
+            let correct = 0;
+            let total = dragDropItems2.length;
+
+            activeItems.forEach(item => {
+                if (item.dataset.category === 'active') {
+                    item.classList.add('correct-place');
+                    item.classList.remove('wrong-place');
+                    correct++;
+                } else {
+                    item.classList.add('wrong-place');
+                    item.classList.remove('correct-place');
+                }
+            });
+
+            passiveItems.forEach(item => {
+                if (item.dataset.category === 'passive') {
+                    item.classList.add('correct-place');
+                    item.classList.remove('wrong-place');
+                    correct++;
+                } else {
+                    item.classList.add('wrong-place');
+                    item.classList.remove('correct-place');
+                }
+            });
+
+            const feedback = document.getElementById('sorting-feedback-2');
+            if (correct === total) {
+                feedback.textContent = '🎉 ممتاز! جميع التصنيفات صحيحة!';
+                feedback.className = 'feedback correct show';
+            } else {
+                feedback.textContent = `✨ ${correct} من ${total} صحيحة. العناصر الخضراء في المكان الصحيح، والحمراء في المكان الخاطئ!`;
+                feedback.className = 'feedback wrong show';
+            }
+
+            updateTotalScore();
+        }
+
+        function updateTotalScore() {
+            const correctItems = document.querySelectorAll('.drag-item.correct-place');
+            score4 = correctItems.length;
+            document.getElementById('current-score-4').textContent = score4;
+        }
+
+        function renderRiddles() {
+            const container = document.getElementById('riddles-container');
+            container.innerHTML = '';
+
+            riddles.forEach((riddle, index) => {
+                const card = document.createElement('div');
+                card.className = 'riddle-card';
+                card.innerHTML = `
+                    <div class="riddle-number">اللغز ${index + 1} من ${riddles.length}</div>
+                    <div class="riddle-question">🤔 من أنا؟ اكتشفي من خلال التلميحات!</div>
+                    <div class="hints-container" id="hints-container-${index}">
+                        ${riddle.hints.map((hint, hintIndex) => `
+                            <div class="hint-box" id="hint-${index}-${hintIndex}">${hint}</div>
+                        `).join('')}
+                    </div>
+                    <button class="hint-btn" id="hint-btn-${index}" data-index="${index}">
+                        💡 احصلي على تلميح
+                    </button>
+                    <div class="riddle-input-container">
+                        <input 
+                            type="text" 
+                            class="riddle-input" 
+                            id="riddle-input-${index}"
+                            placeholder="اكتبي إجابتك هنا..."
+                            data-answer="${riddle.answer}"
+                            data-index="${index}"
+                        />
+                        <button class="riddle-submit-btn" data-index="${index}">✔ إرسال الإجابة</button>
+                    </div>
+                    <div class="riddle-feedback" id="riddle-feedback-${index}"></div>
+                `;
+                container.appendChild(card);
+            });
+
+            attachRiddleListeners();
+        }
+
+        function attachRiddleListeners() {
+            const hintButtons = document.querySelectorAll('.hint-btn');
+            hintButtons.forEach(button => {
+                button.addEventListener('click', handleHintClick);
+            });
+
+            const submitButtons = document.querySelectorAll('.riddle-submit-btn');
+            submitButtons.forEach(button => {
+                button.addEventListener('click', handleRiddleSubmit);
+            });
+
+            const inputs = document.querySelectorAll('.riddle-input');
+            inputs.forEach(input => {
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        const index = input.dataset.index;
+                        const button = document.querySelector(`.riddle-submit-btn[data-index="${index}"]`);
+                        button.click();
+                    }
+                });
+            });
+        }
+
+        function handleHintClick(e) {
+            const button = e.currentTarget;
+            const index = parseInt(button.dataset.index);
+            const state = riddleStates[index];
+
+            if (state.solved || state.currentHint >= riddles[index].hints.length) {
+                return;
+            }
+
+            const hintBox = document.getElementById(`hint-${index}-${state.currentHint}`);
+            hintBox.classList.add('show');
+
+            state.currentHint++;
+
+            if (state.currentHint >= riddles[index].hints.length) {
+                button.disabled = true;
+                button.textContent = '✅ جميع التلميحات ظهرت';
+            } else {
+                button.textContent = `💡 التلميح التالي (${state.currentHint + 1}/${riddles[index].hints.length})`;
+            }
+        }
+
+        function normalizeArabicText(text) {
+            return text
+                .trim()
+                .toLowerCase()
+                .replace(/أ|إ|آ/g, 'ا')
+                .replace(/ة/g, 'ه')
+                .replace(/ى/g, 'ي')
+                .replace(/\s+/g, ' ');
+        }
+
+        function handleRiddleSubmit(e) {
+            const button = e.currentTarget;
+            const index = button.dataset.index;
+            const input = document.getElementById(`riddle-input-${index}`);
+            const feedback = document.getElementById(`riddle-feedback-${index}`);
+            const hintBtn = document.getElementById(`hint-btn-${index}`);
+            const correctAnswer = input.dataset.answer;
+            const state = riddleStates[index];
+
+            if (input.disabled) return;
+
+            const userAnswer = normalizeArabicText(input.value);
+            const normalizedCorrect = normalizeArabicText(correctAnswer);
+
+            const isCorrect = userAnswer.includes(normalizedCorrect) || normalizedCorrect.includes(userAnswer);
+
+            input.disabled = true;
+            button.disabled = true;
+            hintBtn.disabled = true;
+
+            if (isCorrect) {
+                state.solved = true;
+                input.classList.add('correct');
+                feedback.textContent = `🎉 ��ائع! الإجابة الصحيحة: ${correctAnswer}`;
+                feedback.className = 'riddle-feedback correct show';
+                score6++;
+                document.getElementById('current-score-6').textContent = score6;
+            } else {
+                input.classList.add('wrong');
+                feedback.textContent = `❌ محاولة جيدة! الإجابة الصحيحة: ${correctAnswer}`;
+                feedback.className = 'riddle-feedback wrong show';
+            }
+        }
+
+        function renderCompletionQuestions() {
+            const container = document.getElementById('completion-container');
+            container.innerHTML = '';
+
+            completionQuestions.forEach((q, index) => {
+                const card = document.createElement('div');
+                card.className = 'riddle-card';
+                
+                let inputsHTML = '';
+                for (let i = 0; i < q.blanks; i++) {
+                    inputsHTML += `
+                        <input 
+                            type="text" 
+                            class="riddle-input completion-input" 
+                            id="completion-input-${index}-${i}"
+                            placeholder="${q.blanks > 1 ? `الإجابة ${i + 1}` : 'اكتبي إجابتك هنا...'}"
+                            data-question="${index}"
+                            data-blank="${i}"
+                        />
+                    `;
+                }
+                
+                card.innerHTML = `
+                    <div class="riddle-number">السؤال ${index + 1} من ${completionQuestions.length}</div>
+                    <div class="riddle-question">${q.question} ${'__________'.repeat(q.blanks)}</div>
+                    <div class="riddle-input-container">
+                        ${inputsHTML}
+                        <button class="riddle-submit-btn completion-submit" data-index="${index}">✔ إرسال الإجابة</button>
+                    </div>
+                    <div class="riddle-feedback" id="completion-feedback-${index}"></div>
+                `;
+                container.appendChild(card);
+            });
+
+            attachCompletionListeners();
+        }
+
+        function attachCompletionListeners() {
+            const submitButtons = document.querySelectorAll('.completion-submit');
+            submitButtons.forEach(button => {
+                button.addEventListener('click', handleCompletionSubmit);
+            });
+
+            const inputs = document.querySelectorAll('.completion-input');
+            inputs.forEach(input => {
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        const questionIndex = input.dataset.question;
+                        const button = document.querySelector(`.completion-submit[data-index="${questionIndex}"]`);
+                        button.click();
+                    }
+                });
+            });
+        }
+
+        function handleCompletionSubmit(e) {
+            const button = e.currentTarget;
+            const index = button.dataset.index;
+            const question = completionQuestions[index];
+            const feedback = document.getElementById(`completion-feedback-${index}`);
+            
+            let allCorrect = true;
+            let correctCount = 0;
+            const userAnswers = [];
+
+            for (let i = 0; i < question.blanks; i++) {
+                const input = document.getElementById(`completion-input-${index}-${i}`);
+                if (input.disabled) return;
+
+                const userAnswer = normalizeArabicText(input.value);
+                userAnswers.push(input.value);
+                
+                const correctAnswers = question.blanks === 1 
+                    ? question.answers 
+                    : question.answers[i];
+                
+                const isCorrect = correctAnswers.some(answer => {
+                    const normalized = normalizeArabicText(answer);
+                    return userAnswer.includes(normalized) || normalized.includes(userAnswer);
+                });
+
+                if (isCorrect) {
+                    input.classList.add('correct');
+                    correctCount++;
+                } else {
+                    input.classList.add('wrong');
+                    allCorrect = false;
+                }
+                
+                input.disabled = true;
+            }
+
+            button.disabled = true;
+
+            if (allCorrect) {
+                feedback.textContent = '🎉 ممتاز! جميع الإجابات صحيحة!';
+                feedback.className = 'riddle-feedback correct show';
+                score7++;
+                document.getElementById('current-score-7').textContent = score7;
+            } else {
+                const correctAnswersText = question.blanks === 1 
+                    ? question.answers[0]
+                    : question.answers.map(arr => arr[0]).join(' و ');
+                
+                feedback.textContent = `${correctCount > 0 ? `✨ ${correctCount} من ${question.blanks} صحيحة! ` : '❌ '}الإجابة الصحيحة: ${correctAnswersText}`;
+                feedback.className = 'riddle-feedback wrong show';
+            }
+        }
+
+        document.getElementById('check-sorting-btn-1').addEventListener('click', checkSorting1);
+        document.getElementById('check-sorting-btn-2').addEventListener('click', checkSorting2);
+
+        async function onConfigChange(config) {
+            const mainTitle = document.getElementById('main-title');
+            if (mainTitle) {
+                mainTitle.textContent = config.main_title || defaultConfig.main_title;
+            }
+
+            const primaryColor = config.primary_color || defaultConfig.primary_color;
+            const secondaryColor = config.secondary_color || defaultConfig.secondary_color;
+
+            document.querySelectorAll('.header, .question-number, .check-btn, .riddle-submit-btn, .riddle-number').forEach(el => {
+                el.style.background = `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)`;
+            });
+        }
+
+        if (window.elementSdk) {
+            window.elementSdk.init({
+                defaultConfig: defaultConfig,
+                onConfigChange: onConfigChange,
+                mapToCapabilities: (config) => ({
+                    recolorables: [
+                        {
+                            get: () => config.primary_color || defaultConfig.primary_color,
+                            set: (value) => {
+                                config.primary_color = value;
+                                window.elementSdk.setConfig({ primary_color: value });
+                            }
+                        },
+                        {
+                            get: () => config.secondary_color || defaultConfig.secondary_color,
+                            set: (value) => {
+                                config.secondary_color = value;
+                                window.elementSdk.setConfig({ secondary_color: value });
+                            }
+                        }
+                    ],
+                    borderables: [],
+                    fontEditable: undefined,
+                    fontSizeable: undefined
+                }),
+                mapToEditPanelValues: (config) => new Map([
+                    ["main_title", config.main_title || defaultConfig.main_title]
+                ])
+            });
+        }
+
+        renderLevel1Questions();
+        renderLevel2Questions();
+        renderMatchingGame();
+        renderDragDropGame();
+        renderScenarios();
+        renderRiddles();
+        renderCompletionQuestions();
+        renderLevel8Questions();
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9abb578d04d69350',t:'MTc2NTM1NTAyNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
