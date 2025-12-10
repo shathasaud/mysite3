@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>رحلة النظام التفاعلية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            box-sizing: border-box;
+            font-family: 'Tajawal', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #4a5568;
+            margin: 0 0 10px 0;
+            font-size: 2.5rem;
+        }
+
+        .progress-bar {
+            background: #e2e8f0;
+            height: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #48bb78, #38a169);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+
+        .stages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stage-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stage-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .stage-card.active {
+            border-color: #4299e1;
+            background: linear-gradient(135deg, #ebf8ff, #bee3f8);
+        }
+
+        .stage-card.completed {
+            border-color: #48bb78;
+            background: linear-gradient(135deg, #f0fff4, #c6f6d5);
+        }
+
+        .stage-card.locked {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .stage-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .stage-icon {
+            font-size: 2.5rem;
+            margin-left: 15px;
+        }
+
+        .stage-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #2d3748;
+        }
+
+        .stage-description {
+            color: #4a5568;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .challenge-section {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .challenge-section.active {
+            display: block;
+        }
+
+        .question {
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .options {
+            display: grid;
+            gap: 10px;
+        }
+
+        .option {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .option:hover {
+            border-color: #4299e1;
+            background: #ebf8ff;
+        }
+
+        .option.selected {
+            border-color: #4299e1;
+            background: #bee3f8;
+        }
+
+        .option.correct {
+            border-color: #48bb78;
+            background: #c6f6d5;
+        }
+
+        .option.incorrect {
+            border-color: #f56565;
+            background: #fed7d7;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #4299e1, #3182ce);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: all 0.2s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(66, 153, 225, 0.4);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-completed {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status-active {
+            background: #bee3f8;
+            color: #1a365d;
+        }
+
+        .status-locked {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .skill-badge {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin: 10px 0;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .celebration {
+            text-align: center;
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .celebration.show {
+            display: block;
+            animation: celebrationPulse 2s ease-in-out;
+        }
+
+        @keyframes celebrationPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .stars {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .back-to-lesson {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+        }
+
+        .back-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            font-family: 'Tajawal', sans-serif;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .back-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            background: linear-gradient(135deg, #5a67d8, #6b46c1);
+        }
+
+        .back-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .objectives-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 3px solid #667eea;
+        }
+
+        .objectives-card h2 {
+            color: #4a5568;
+            margin: 0 0 20px 0;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+
+        .objectives-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .objective-item {
+            display: flex;
+            align-items: center;
+            background: linear-gradient(135deg, #f7fafc, #edf2f7);
+            padding: 15px;
+            border-radius: 10px;
+            border-right: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .objective-item:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .objective-icon {
+            font-size: 1.5rem;
+            margin-left: 15px;
+            min-width: 40px;
+        }
+
+        .objective-item span:last-child {
+            color: #2d3748;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .stages-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .objectives-card {
+                padding: 20px;
+            }
+
+            .objective-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+
+            .objective-icon {
+                margin-left: 0;
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 رحلة النظام التفاعلية</h1>
+            <p>اكتشفي مراحل دورة حياة النظام من خلال حل التحديات والألغاز!</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <p id="progressText">المرحلة 0 من 7</p>
+        </div>
+
+        <div class="objectives-card">
+            <h2>🎯 الهدف:</h2>
+            <div class="objectives-list">
+                <div class="objective-item">
+                    <span class="objective-icon">🚀</span>
+                    <span>دمج الطالبات في رحلة عملية تغطي دورة حياة النظام</span>
+                </div>
+                <div class="objective-item">
+                    <span class="objective-icon">🧠</span>
+                    <span>تطبيق مهارات التفكير العليا (تحليل – تركيب – تقييم – إبداع – حل مشكلات)</span>
+                </div>
+                <div class="objective-item">
+                    <span class="objective-icon">🤝</span>
+                    <span>تعزيز التعاون والتعلم النشط بين المجموعات</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stages-grid" id="stagesGrid">
+            <!-- المراحل ستُضاف هنا بواسطة JavaScript -->
+        </div>
+
+        <div class="celebration" id="celebration">
+            <div class="stars">🌟✨🎉✨🌟</div>
+            <h2>مبروك! لقد أكملتِ رحلة النظام بنجاح!</h2>
+            <p>تم تجميع جميع مراحل دورة حياة النظام بنجاح. أنتِ الآن خبيرة في أنظمة المعلومات!</p>
+        </div>
+
+        <div class="back-to-lesson">
+            <button class="back-btn" onclick="goBackToLesson()">
+                📚 العودة للدرس
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const stages = [
+            {
+                id: 1,
+                title: "التحليل",
+                icon: "🔍",
+                description: "مرحلة دراسة المتطلبات وتحليل النظام الحالي",
+                question: "🧩 اللغز: أمامك مشكلة - تطبيق لا يحفظ بيانات المستخدمين. ما البيانات الأساسية التي يجب جمعها أولاً لحل المشكلة؟",
+                options: [
+                    "معلومات المستخدمين وسلوكهم في استخدام التطبيق",
+                    "ألوان التطبيق المفضلة",
+                    "نوع الجهاز المستخدم فقط",
+                    "عدد مرات فتح التطبيق"
+                ],
+                correct: 0,
+                color: "#ff6b6b",
+                skill: "🎯 مهارة التفكير: التحليل"
+            },
+            {
+                id: 2,
+                title: "التصميم",
+                icon: "🎨",
+                description: "تصميم هيكل النظام والواجهات",
+                question: "🎨 المهمة الإبداعية: صممي واجهة شاشة دخول مبسطة. ما العناصر الأساسية التي يجب أن تحتويها؟",
+                options: [
+                    "حقل اسم المستخدم، كلمة المرور، زر دخول",
+                    "صور كثيرة وألوان فقط",
+                    "نص طويل عن الشركة",
+                    "روابط لمواقع أخرى فقط"
+                ],
+                correct: 0,
+                color: "#4ecdc4",
+                skill: "🎯 مهارة التفكير: الإبداع والتركيب"
+            },
+            {
+                id: 3,
+                title: "التطوير والاختبار",
+                icon: "🛠️",
+                description: "كتابة الأكواد وبناء النظام واختباره",
+                question: "🛠️ السؤال التطبيقي: أعطي مثالاً لاختبار يكشف خطأ في إدخال البيانات (مثل كتابة عمر = -5). ما نوع الاختبار المطلوب؟",
+                options: [
+                    "اختبار صحة البيانات المدخلة (Data Validation)",
+                    "اختبار الألوان",
+                    "اختبار سرعة الإنترنت",
+                    "اختبار حجم الشاشة"
+                ],
+                correct: 0,
+                color: "#45b7d1",
+                skill: "🎯 مهارة التفكير: التقييم"
+            },
+            {
+                id: 4,
+                title: "التنفيذ",
+                icon: "🚀",
+                description: "إطلاق النظام وبدء العمل به",
+                question: "🚀 النشاط الإبداعي: اكتبي إعلانًا قصيرًا لنشر النظام الجديد للطالبات في المدرسة. ما أهم عنصر يجب ذكره؟",
+                options: [
+                    "فوائد النظام وكيفية الوصول إليه وموعد التشغيل",
+                    "تاريخ إنشاء النظام فقط",
+                    "أسماء المطورين",
+                    "تكلفة تطوير النظام"
+                ],
+                correct: 0,
+                color: "#f7b731",
+                skill: "🎯 مهارة التفكير: الإبداع والتواصل"
+            },
+            {
+                id: 5,
+                title: "الصيانة",
+                icon: "🔧",
+                description: "متابعة النظام وإصلاح المشاكل",
+                question: "🔧 اللغز العملي: بعد 6 أشهر توقف زر (إرسال) عن العمل. ما الإجراء المنطقي الأول؟",
+                options: [
+                    "فحص وإصلاح الخطأ ثم تحديث البرنامج",
+                    "إعادة تصميم النظام بالكامل",
+                    "تجاهل المشكلة",
+                    "شراء نظام جديد"
+                ],
+                correct: 0,
+                color: "#5f27cd",
+                skill: "🎯 مهارة التفكير: حل المشكلات"
+            },
+            {
+                id: 6,
+                title: "التوثيق",
+                icon: "📑",
+                description: "كتابة الأدلة والتعليمات للمستخدمين",
+                question: "📑 المهمة الكتابية: اكتبي فقرة قصيرة لكتيب المستخدم توضح كيفية تسجيل الدخول. ما أهم عنصر؟",
+                options: [
+                    "خطوات واضحة ومرتبة مع أمثلة بسيطة",
+                    "معلومات تقنية معقدة",
+                    "تاريخ إنشاء النظام",
+                    "أسماء فريق التطوير"
+                ],
+                correct: 0,
+                color: "#00d2d3",
+                skill: "🎯 مهارة التفكير: التوضيح والشرح"
+            },
+            {
+                id: 7,
+                title: "التقييم",
+                icon: "📊",
+                description: "تقييم أداء النظام والتحسين المستمر",
+                question: "📊 النشاط التقييمي: اقترحي 3 أسئلة استبيان لمعرفة رضا المستخدمين عن النظام. ما نوع الأسئلة الأهم؟",
+                options: [
+                    "أسئلة عن سهولة الاستخدام والفائدة ومستوى الرضا",
+                    "أسئلة عن العمر والجنس فقط",
+                    "أسئلة عن الألوان المفضلة",
+                    "أسئلة عن نوع الجهاز المستخدم"
+                ],
+                correct: 0,
+                color: "#ff9ff3",
+                skill: "🎯 مهارة التفكير: التقييم"
+            }
+        ];
+
+        let currentStage = 0;
+        let completedStages = 0;
+
+        function initializeGame() {
+            const stagesGrid = document.getElementById('stagesGrid');
+            
+            stages.forEach((stage, index) => {
+                const stageCard = document.createElement('div');
+                stageCard.className = `stage-card ${index === 0 ? 'active' : 'locked'}`;
+                stageCard.id = `stage-${stage.id}`;
+                
+                stageCard.innerHTML = `
+                    <div class="status-badge ${index === 0 ? 'status-active' : 'status-locked'}" id="status-${stage.id}">
+                        ${index === 0 ? 'نشط' : 'مقفل'}
+                    </div>
+                    <div class="stage-header">
+                        <div class="stage-icon">${stage.icon}</div>
+                        <div class="stage-title">${stage.title}</div>
+                    </div>
+                    <div class="stage-description">${stage.description}</div>
+                    <div class="skill-badge">${stage.skill}</div>
+                    <div class="challenge-section ${index === 0 ? 'active' : ''}" id="challenge-${stage.id}">
+                        <div class="question">${stage.question}</div>
+                        <div class="options" id="options-${stage.id}">
+                            ${stage.options.map((option, optIndex) => `
+                                <div class="option" onclick="selectOption(${stage.id}, ${optIndex})" id="option-${stage.id}-${optIndex}">
+                                    ${option}
+                                </div>
+                            `).join('')}
+                        </div>
+                        <button class="submit-btn" onclick="submitAnswer(${stage.id})" id="submit-${stage.id}" disabled>
+                            تأكيد الإجابة
+                        </button>
+                    </div>
+                `;
+                
+                stageCard.style.borderColor = stage.color;
+                stagesGrid.appendChild(stageCard);
+            });
+            
+            updateProgress();
+        }
+
+        let selectedAnswers = {};
+
+        function selectOption(stageId, optionIndex) {
+            // إلغاء تحديد جميع الخيارات
+            const options = document.querySelectorAll(`#options-${stageId} .option`);
+            options.forEach(option => option.classList.remove('selected'));
+            
+            // تحديد الخيار المختار
+            document.getElementById(`option-${stageId}-${optionIndex}`).classList.add('selected');
+            selectedAnswers[stageId] = optionIndex;
+            
+            // تفعيل زر التأكيد
+            document.getElementById(`submit-${stageId}`).disabled = false;
+        }
+
+        function submitAnswer(stageId) {
+            const stage = stages.find(s => s.id === stageId);
+            const selectedAnswer = selectedAnswers[stageId];
+            const options = document.querySelectorAll(`#options-${stageId} .option`);
+            
+            // إظهار الإجابات الصحيحة والخاطئة
+            options.forEach((option, index) => {
+                if (index === stage.correct) {
+                    option.classList.add('correct');
+                } else if (index === selectedAnswer && index !== stage.correct) {
+                    option.classList.add('incorrect');
+                }
+            });
+            
+            // تعطيل زر التأكيد
+            document.getElementById(`submit-${stageId}`).disabled = true;
+            
+            if (selectedAnswer === stage.correct) {
+                // إجابة صحيحة
+                setTimeout(() => {
+                    completeStage(stageId);
+                }, 1500);
+            } else {
+                // إجابة خاطئة - إعطاء فرصة أخرى
+                setTimeout(() => {
+                    resetStage(stageId);
+                }, 2000);
+            }
+        }
+
+        function completeStage(stageId) {
+            const stageCard = document.getElementById(`stage-${stageId}`);
+            const statusBadge = document.getElementById(`status-${stageId}`);
+            const challengeSection = document.getElementById(`challenge-${stageId}`);
+            
+            // تحديث حالة المرحلة الحالية
+            stageCard.classList.remove('active');
+            stageCard.classList.add('completed');
+            statusBadge.textContent = 'مكتملة ✓';
+            statusBadge.className = 'status-badge status-completed';
+            challengeSection.classList.remove('active');
+            
+            completedStages++;
+            currentStage++;
+            
+            // تفعيل المرحلة التالية
+            if (currentStage < stages.length) {
+                const nextStageId = stages[currentStage].id;
+                const nextStageCard = document.getElementById(`stage-${nextStageId}`);
+                const nextStatusBadge = document.getElementById(`status-${nextStageId}`);
+                const nextChallengeSection = document.getElementById(`challenge-${nextStageId}`);
+                
+                nextStageCard.classList.remove('locked');
+                nextStageCard.classList.add('active');
+                nextStatusBadge.textContent = 'نشط';
+                nextStatusBadge.className = 'status-badge status-active';
+                nextChallengeSection.classList.add('active');
+            } else {
+                // جميع المراحل مكتملة
+                showCelebration();
+            }
+            
+            updateProgress();
+        }
+
+        function resetStage(stageId) {
+            const options = document.querySelectorAll(`#options-${stageId} .option`);
+            options.forEach(option => {
+                option.classList.remove('selected', 'correct', 'incorrect');
+            });
+            
+            delete selectedAnswers[stageId];
+            document.getElementById(`submit-${stageId}`).disabled = true;
+        }
+
+        function updateProgress() {
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            
+            const progressPercentage = (completedStages / stages.length) * 100;
+            progressFill.style.width = `${progressPercentage}%`;
+            progressText.textContent = `المرحلة ${completedStages} من ${stages.length}`;
+        }
+
+        function showCelebration() {
+            const celebration = document.getElementById('celebration');
+            celebration.classList.add('show');
+            
+            // إضافة تأثيرات صوتية بصرية
+            setTimeout(() => {
+                celebration.scrollIntoView({ behavior: 'smooth' });
+            }, 500);
+        }
+
+        function goBackToLesson() {
+            // الانتقال إلى رابط الدرس المحدد
+            window.open('https://www.shathaedu.com/slc2', '_blank', 'noopener,noreferrer');
+        }
+
+        // تهيئة اللعبة عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', initializeGame);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9abb92f14295ce00',t:'MTc2NTM1NzQ1OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
