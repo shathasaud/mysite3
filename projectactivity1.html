@@ -1,0 +1,2718 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مجموعة الألعاب التعليمية - تقنية رقمية 3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            box-sizing: border-box;
+        }
+        
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        .game-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transform: perspective(1000px) rotateY(0deg);
+            transition: all 0.6s ease;
+        }
+
+        .game-card:hover {
+            transform: perspective(1000px) rotateY(5deg) scale(1.02);
+        }
+
+        .solution-btn, .answer-btn, .option-btn {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .solution-btn::before, .answer-btn::before, .option-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .solution-btn:hover::before, .answer-btn:hover::before, .option-btn:hover::before {
+            left: 100%;
+        }
+
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .bounce-in {
+            animation: bounceIn 0.6s ease-out;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .sortable-item {
+            cursor: move;
+            transition: all 0.3s ease;
+        }
+
+        .sortable-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .sortable-item.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+        }
+
+        .drop-zone {
+            min-height: 100px;
+            border: 2px dashed #cbd5e0;
+            transition: all 0.3s ease;
+        }
+
+        .drop-zone.drag-over {
+            border-color: #4299e1;
+            background-color: #ebf8ff;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* تأثيرات خاصة بكل لعبة */
+        .manager-effect {
+            animation: managerPulse 3s infinite;
+        }
+
+        @keyframes managerPulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(147, 51, 234, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(147, 51, 234, 0.6); }
+        }
+
+        .key-question-effect {
+            animation: keyGlow 2s infinite alternate;
+        }
+
+        @keyframes keyGlow {
+            0% { box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); }
+            100% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.8); }
+        }
+
+        .sorting-effect {
+            animation: sortingShake 0.5s ease-in-out;
+        }
+
+        @keyframes sortingShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .who-am-i-effect {
+            animation: mysteryRotate 4s infinite linear;
+        }
+
+        @keyframes mysteryRotate {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(90deg) scale(1.1); }
+            50% { transform: rotate(180deg) scale(1); }
+            75% { transform: rotate(270deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        .correct-card {
+            background: linear-gradient(135deg, #10b981, #059669) !important;
+            animation: correctPulse 0.6s ease-out;
+            border: 3px solid #065f46;
+        }
+
+        .incorrect-card {
+            background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+            animation: incorrectShake 0.6s ease-out;
+            border: 3px solid #991b1b;
+        }
+
+        @keyframes correctPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes incorrectShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .hint-tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .hint-tooltip .hint-text {
+            visibility: hidden;
+            width: 300px;
+            background-color: #1f2937;
+            color: white;
+            text-align: center;
+            border-radius: 12px;
+            padding: 12px;
+            position: absolute;
+            z-index: 1000;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -150px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 14px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .hint-tooltip .hint-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #1f2937 transparent transparent transparent;
+        }
+
+        .hint-tooltip:hover .hint-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .sparkle-effect {
+            animation: sparkle 1.5s infinite;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.05); }
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .project-step-effect {
+            animation: projectStepGlow 2s infinite alternate;
+        }
+
+        @keyframes projectStepGlow {
+            0% { 
+                box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
+                transform: translateY(0px);
+            }
+            100% { 
+                box-shadow: 0 0 40px rgba(34, 197, 94, 0.8);
+                transform: translateY(-2px);
+            }
+        }
+
+        .drag-hint {
+            animation: dragHint 2s infinite;
+        }
+
+        @keyframes dragHint {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+        }
+
+        .success-bounce {
+            animation: successBounce 0.6s ease-out;
+        }
+
+        @keyframes successBounce {
+            0% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.1) rotate(5deg); }
+            50% { transform: scale(1.2) rotate(-5deg); }
+            75% { transform: scale(1.1) rotate(2deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        .error-shake {
+            animation: errorShake 0.5s ease-in-out;
+        }
+
+        @keyframes errorShake {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            25% { transform: translateX(-8px) rotate(-2deg); }
+            75% { transform: translateX(8px) rotate(2deg); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 min-h-screen">
+    <div class="container mx-auto px-6 py-8 max-w-6xl">
+        <!-- Header -->
+        <div class="bg-white rounded-3xl shadow-2xl p-8 mb-8 border border-purple-200">
+            <div class="text-center">
+                <div class="text-6xl mb-4">🎮</div>
+                <h1 class="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
+                    مجموعة الألعاب التعليمية
+                </h1>
+                <h2 class="text-2xl font-semibold text-purple-700 mb-4">
+                    أنشطة وألعاب تفاعلية صفية لتعلم التخطيط لأساسيات المشروع
+                </h2>
+                <p class="text-xl text-gray-600 mb-6">
+                    ألعاب تفاعلية لتعلم التقنية الرقمية وإدارة المشاريع
+                </p>
+                <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6">
+                    <h2 class="text-lg font-semibold text-purple-800 mb-2">
+                        🎓 للمرحلة الثانوية - مقرر تقنية رقمية 3
+                    </h2>
+                    <p class="text-purple-600">
+                        اختر اللعبة التي تريد تجربتها من القائمة أدناه
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Selection -->
+        <div id="game-selection" class="bg-white rounded-3xl shadow-2xl p-8 mb-8 border border-blue-200">
+            <h2 class="text-2xl font-bold text-center text-blue-800 mb-4">
+                <span class="text-3xl mr-2">🎯</span>
+                اختر اللعبة
+            </h2>
+            <p class="text-lg text-center text-blue-600 mb-6">
+                معلمة المادة / شذا الردادي
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <button onclick="showGame('manager-decision')" class="game-selector bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white p-6 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                    <div class="text-4xl mb-3">🎯</div>
+                    <div class="text-lg font-bold mb-2">قرار المدير</div>
+                    <div class="text-sm opacity-90">تعلم اتخاذ القرارات الإدارية</div>
+                </button>
+                
+                <button onclick="showGame('key-question')" class="game-selector bg-gradient-to-br from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white p-6 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                    <div class="text-4xl mb-3">🔑</div>
+                    <div class="text-lg font-bold mb-2">سؤال المفتاح</div>
+                    <div class="text-sm opacity-90">أسئلة تقنية تفاعلية</div>
+                </button>
+                
+                <button onclick="showGame('interactive-sorting')" class="game-selector bg-gradient-to-br from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white p-6 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                    <div class="text-4xl mb-3">🔄</div>
+                    <div class="text-lg font-bold mb-2">ترتيب تفاعلية</div>
+                    <div class="text-sm opacity-90">ترتيب العناصر بالسحب</div>
+                </button>
+                
+                <button onclick="showGame('who-am-i')" class="game-selector bg-gradient-to-br from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white p-6 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                    <div class="text-4xl mb-3">❓</div>
+                    <div class="text-lg font-bold mb-2">من أنا؟</div>
+                    <div class="text-sm opacity-90">تخمين المصطلحات التقنية</div>
+                </button>
+                
+                <button onclick="showGame('project-triangle')" class="game-selector bg-gradient-to-br from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white p-6 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                    <div class="text-4xl mb-3">🔺</div>
+                    <div class="text-lg font-bold mb-2">مثلث المشروع</div>
+                    <div class="text-sm opacity-90">لغز تفاعلي لإكمال المثلث</div>
+                </button>
+            </div>
+            <div class="text-center mt-6">
+                <button onclick="showAllGames()" class="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white px-8 py-3 rounded-2xl font-bold transition-all duration-300 transform hover:scale-105 shadow-lg">
+                    <span class="mr-2">🎮</span>عرض جميع الألعاب
+                </button>
+            </div>
+        </div>
+
+        <!-- Back to Menu Button -->
+        <div id="back-to-menu" class="text-center mb-6 hidden">
+            <button onclick="showGameSelection()" class="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-6 py-3 rounded-2xl font-bold transition-all duration-300 transform hover:scale-105 shadow-lg">
+                <span class="mr-2">🏠</span>العودة للقائمة الرئيسية
+            </button>
+        </div>
+
+        <!-- Manager Decision Game -->
+        <div id="manager-decision-game" class="hidden">
+            <!-- Exit Button -->
+            <div class="text-left mb-4">
+                <button onclick="showGameSelection()" class="bg-red-500 hover:bg-red-600 text-white w-12 h-12 rounded-full font-bold text-xl transition-all duration-300 transform hover:scale-110 shadow-lg flex items-center justify-center">
+                    ✕
+                </button>
+            </div>
+            <!-- Game Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl p-6 text-white text-center shadow-lg">
+                    <div class="text-3xl mb-2">🏆</div>
+                    <div class="text-sm mb-1">النقاط</div>
+                    <div id="md-total-score" class="text-3xl font-bold">0</div>
+                </div>
+                <div class="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl p-6 text-white text-center shadow-lg">
+                    <div class="text-3xl mb-2">⭐</div>
+                    <div class="text-sm mb-1">المستوى</div>
+                    <div id="md-current-level" class="text-3xl font-bold">مبتدئ</div>
+                </div>
+                <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-6 text-white text-center shadow-lg">
+                    <div class="text-3xl mb-2">✅</div>
+                    <div class="text-sm mb-1">المواقف المحلولة</div>
+                    <div id="md-scenarios-solved" class="text-3xl font-bold">0</div>
+                </div>
+                <div class="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-6 text-white text-center shadow-lg">
+                    <div class="text-3xl mb-2">📊</div>
+                    <div class="text-sm mb-1">معدل النجاح</div>
+                    <div id="md-success-rate" class="text-3xl font-bold">0%</div>
+                </div>
+            </div>
+
+            <!-- Game Area -->
+            <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-purple-200">
+                <div class="bg-gradient-to-r from-purple-600 to-pink-600 p-8">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-2xl font-bold text-white mb-2">
+                                <span class="text-3xl mr-3">🎯</span>
+                                قرار المدير
+                            </h3>
+                            <p class="text-purple-100">اختر الحل الأمثل لكل موقف تواجهه</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-white text-sm mb-1">الموقف الحالي</div>
+                            <div id="md-scenario-counter" class="text-2xl font-bold text-white">1 / 10</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-8">
+                    <div id="md-scenario-container" class="game-card manager-effect rounded-2xl p-8 mb-8 text-white shadow-xl">
+                        <div class="text-center mb-6">
+                            <div id="md-scenario-icon" class="text-6xl mb-4">⚠️</div>
+                            <h4 class="text-2xl font-bold mb-4">موقف إداري جديد</h4>
+                            <div id="md-scenario-category" class="bg-white bg-opacity-20 rounded-full px-4 py-2 text-sm font-semibold inline-block mb-4">
+                                إدارة المشاريع
+                            </div>
+                        </div>
+                        <div id="md-scenario-text" class="text-xl leading-relaxed text-center bg-white bg-opacity-10 rounded-xl p-6">
+                            اضغط على "موقف جديد" لبدء اللعبة
+                        </div>
+                    </div>
+
+                    <div id="md-solutions-container" class="hidden">
+                        <h5 class="text-2xl font-bold text-gray-800 text-center mb-6">
+                            <span class="text-3xl mr-2">🤔</span>
+                            ما هو القرار الصحيح؟
+                        </h5>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            <button id="md-solution-1" class="solution-btn bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white p-6 rounded-2xl font-semibold text-lg shadow-lg transform hover:scale-105 transition-all duration-300">
+                                <div class="text-3xl mb-3">🔄</div>
+                                <div class="solution-title font-bold mb-2">إعادة الجدولة</div>
+                                <div class="solution-desc text-sm opacity-90"></div>
+                            </button>
+                            <button id="md-solution-2" class="solution-btn bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white p-6 rounded-2xl font-semibold text-lg shadow-lg transform hover:scale-105 transition-all duration-300">
+                                <div class="text-3xl mb-3">🤝</div>
+                                <div class="solution-title font-bold mb-2">التفاوض</div>
+                                <div class="solution-desc text-sm opacity-90"></div>
+                            </button>
+                            <button id="md-solution-3" class="solution-btn bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white p-6 rounded-2xl font-semibold text-lg shadow-lg transform hover:scale-105 transition-all duration-300">
+                                <div class="text-3xl mb-3">🙈</div>
+                                <div class="solution-title font-bold mb-2">تجاهل المشكلة</div>
+                                <div class="solution-desc text-sm opacity-90"></div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="md-feedback-container" class="hidden mb-8">
+                        <div id="md-feedback-content" class="rounded-2xl p-6 text-center"></div>
+                    </div>
+
+                    <div class="flex gap-4 justify-center">
+                        <button id="md-new-scenario-btn" class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                            <span class="mr-2">🎲</span>موقف جديد
+                        </button>
+                        <button id="md-next-scenario-btn" class="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hidden">
+                            <span class="mr-2">➡️</span>الموقف التالي
+                        </button>
+                        <button id="md-reset-game-btn" class="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                            <span class="mr-2">🔄</span>إعادة تشغيل
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Question Game -->
+        <div id="key-question-game" class="hidden">
+            <!-- Exit Button -->
+            <div class="text-left mb-4">
+                <button onclick="showGameSelection()" class="bg-red-500 hover:bg-red-600 text-white w-12 h-12 rounded-full font-bold text-xl transition-all duration-300 transform hover:scale-110 shadow-lg flex items-center justify-center">
+                    ✕
+                </button>
+            </div>
+            <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-blue-200">
+                <div class="bg-gradient-to-r from-blue-600 to-cyan-600 p-8">
+                    <div class="text-center">
+                        <h3 class="text-3xl font-bold text-white mb-2">
+                            <span class="text-4xl mr-3">🔑</span>
+                            سؤال المفتاح
+                        </h3>
+                        <p class="text-blue-100 text-lg">اختبر معرفتك في التقنية الرقمية</p>
+                    </div>
+                </div>
+
+                <div class="p-8">
+                    <div class="text-center mb-8">
+                        <div class="bg-gradient-to-r from-blue-100 to-cyan-100 key-question-effect rounded-2xl p-6 mb-6">
+                            <div class="text-6xl mb-4">💡</div>
+                            <div id="kq-question-text" class="text-xl font-semibold text-blue-800 mb-4">
+                                اضغط على "سؤال جديد" لبدء اللعبة
+                            </div>
+                            <div id="kq-question-category" class="bg-blue-500 text-white px-4 py-2 rounded-full text-sm font-semibold inline-block">
+                                التقنية الرقمية
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="kq-answers-container" class="hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                            <button id="kq-answer-1" class="answer-btn bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white p-6 rounded-2xl font-semibold text-lg shadow-lg transform hover:scale-105 transition-all duration-300">
+                                <div class="text-2xl mb-2">A</div>
+                                <div class="answer-text"></div>
+                            </button>
+                            <button id="kq-answer-2" class="answer-btn bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white p-6 rounded-2xl font-semibold text-lg shadow-lg transform hover:scale-105 transition-all duration-300">
+                                <div class="text-2xl mb-2">B</div>
+                                <div class="answer-text"></div>
+                            </button>
+                            <button id="kq-answer-3" class="answer-btn bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white p-6 rounded-2xl font-semibold text-lg shadow-lg transform hover:scale-105 transition-all duration-300">
+                                <div class="text-2xl mb-2">C</div>
+                                <div class="answer-text"></div>
+                            </button>
+                            <button id="kq-answer-4" class="answer-btn bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white p-6 rounded-2xl font-semibold text-lg shadow-lg transform hover:scale-105 transition-all duration-300">
+                                <div class="text-2xl mb-2">D</div>
+                                <div class="answer-text"></div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="kq-feedback-container" class="hidden mb-8">
+                        <div id="kq-feedback-content" class="rounded-2xl p-6 text-center"></div>
+                    </div>
+
+                    <div class="flex gap-4 justify-center">
+                        <button id="kq-new-question-btn" class="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                            <span class="mr-2">🔑</span>سؤال جديد
+                        </button>
+                        <button id="kq-reset-btn" class="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                            <span class="mr-2">🔄</span>إعادة تشغيل
+                        </button>
+                    </div>
+
+                    <div class="mt-8 text-center">
+                        <div class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl p-6">
+                            <div class="grid grid-cols-3 gap-4">
+                                <div>
+                                    <div class="text-2xl font-bold text-blue-600" id="kq-score">0</div>
+                                    <div class="text-sm text-blue-500">النقاط</div>
+                                </div>
+                                <div>
+                                    <div class="text-2xl font-bold text-green-600" id="kq-correct">0</div>
+                                    <div class="text-sm text-green-500">صحيح</div>
+                                </div>
+                                <div>
+                                    <div class="text-2xl font-bold text-red-600" id="kq-wrong">0</div>
+                                    <div class="text-sm text-red-500">خطأ</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Sorting Game -->
+        <div id="interactive-sorting-game" class="hidden">
+            <!-- Exit Button -->
+            <div class="text-left mb-4">
+                <button onclick="showGameSelection()" class="bg-red-500 hover:bg-red-600 text-white w-12 h-12 rounded-full font-bold text-xl transition-all duration-300 transform hover:scale-110 shadow-lg flex items-center justify-center">
+                    ✕
+                </button>
+            </div>
+            <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-green-200">
+                <div class="bg-gradient-to-r from-green-600 to-emerald-600 p-8">
+                    <div class="text-center">
+                        <h3 class="text-3xl font-bold text-white mb-2">
+                            <span class="text-4xl mr-3">🔄</span>
+                            ترتيب تفاعلية
+                        </h3>
+                        <p class="text-green-100 text-lg">رتب العناصر بالسحب والإفلات</p>
+                    </div>
+                </div>
+
+                <div class="p-8">
+                    <div class="text-center mb-8">
+                        <div id="is-challenge-title" class="text-2xl font-bold text-green-800 mb-4">
+                            اضغط على "تحدي جديد" لبدء اللعبة
+                        </div>
+                        <div id="is-challenge-description" class="text-lg text-gray-600 mb-6">
+                            رتب العناصر حسب التسلسل الصحيح
+                        </div>
+                    </div>
+
+                    <div id="is-items-container" class="mb-8">
+                        <h4 class="text-xl font-bold text-gray-800 mb-4 text-center">العناصر المراد ترتيبها:</h4>
+                        <div id="is-items-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                            <!-- Items will be inserted here -->
+                        </div>
+                    </div>
+
+                    <div id="is-drop-zone" class="drop-zone rounded-2xl p-6 mb-8 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-dashed border-green-300 transition-all duration-300">
+                        <div class="text-center text-green-600">
+                            <div class="text-4xl mb-2 drag-hint">📋</div>
+                            <div class="text-lg font-semibold">اسحب خطوات إعداد خطة المشروع هنا بالترتيب الصحيح</div>
+                            <div class="text-sm mt-2 opacity-75">ابدأ بالخطوة الأولى وانتهِ بالخطوة الأخيرة</div>
+                        </div>
+                        <div id="is-sorted-items" class="mt-6 space-y-3 min-h-[200px]">
+                            <!-- Sorted items will appear here -->
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 justify-center mb-8">
+                        <button id="is-new-challenge-btn" class="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                            <span class="mr-2">🎯</span>تحدي جديد
+                        </button>
+                        <button id="is-check-answer-btn" class="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hidden">
+                            <span class="mr-2">✅</span>تحقق من الإجابة
+                        </button>
+                        <button id="is-restart-sorting-btn" class="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hidden">
+                            <span class="mr-2">🔄</span>إعادة الترتيب
+                        </button>
+                        <button id="is-reset-btn" class="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                            <span class="mr-2">🔄</span>إعادة تشغيل
+                        </button>
+                    </div>
+
+                    <div id="is-feedback-container" class="hidden mb-8">
+                        <div id="is-feedback-content" class="rounded-2xl p-6 text-center"></div>
+                    </div>
+
+                    <div class="text-center">
+                        <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <div class="text-2xl font-bold text-green-600" id="is-score">0</div>
+                                    <div class="text-sm text-green-500">النقاط</div>
+                                </div>
+                                <div>
+                                    <div class="text-2xl font-bold text-blue-600" id="is-completed">0</div>
+                                    <div class="text-sm text-blue-500">مكتمل</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Triangle Game -->
+        <div id="project-triangle-game" class="hidden">
+            <!-- Exit Button -->
+            <div class="text-left mb-4">
+                <button onclick="showGameSelection()" class="bg-red-500 hover:bg-red-600 text-white w-12 h-12 rounded-full font-bold text-xl transition-all duration-300 transform hover:scale-110 shadow-lg flex items-center justify-center">
+                    ✕
+                </button>
+            </div>
+            
+            <!-- Game Header -->
+            <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-indigo-200 mb-8">
+                <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-8">
+                    <div class="text-center">
+                        <h3 class="text-3xl font-bold text-white mb-2">
+                            <span class="text-4xl mr-3">🔺</span>
+                            لغز مثلث المشروع
+                        </h3>
+                        <p class="text-indigo-100 text-lg">أجب على الأسئلة لإكمال مثلث إدارة المشروع</p>
+                    </div>
+                </div>
+
+                <div class="p-8">
+                    <!-- Team Selection -->
+                    <div id="pt-team-selection" class="text-center mb-8">
+                        <h4 class="text-2xl font-bold text-indigo-800 mb-6">اختر عدد الفرق المتنافسة</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <button onclick="startProjectTriangleGame(1)" class="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white p-6 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                                <div class="text-3xl mb-2">👤</div>
+                                <div>فريق واحد</div>
+                                <div class="text-sm opacity-90 mt-1">تحدي فردي</div>
+                            </button>
+                            <button onclick="startProjectTriangleGame(2)" class="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white p-6 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                                <div class="text-3xl mb-2">👥</div>
+                                <div>فريقان</div>
+                                <div class="text-sm opacity-90 mt-1">منافسة ثنائية</div>
+                            </button>
+                            <button onclick="startProjectTriangleGame(3)" class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white p-6 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                                <div class="text-3xl mb-2">👨‍👩‍👧</div>
+                                <div>ثلاثة فرق</div>
+                                <div class="text-sm opacity-90 mt-1">منافسة جماعية</div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Game Area -->
+                    <div id="pt-game-area" class="hidden">
+                        <!-- Teams Display -->
+                        <div id="pt-teams-container" class="grid gap-6 mb-8">
+                            <!-- Teams will be inserted here -->
+                        </div>
+
+                        <!-- Current Question -->
+                        <div id="pt-question-container" class="bg-gradient-to-r from-indigo-100 to-purple-100 rounded-2xl p-8 mb-8 text-center">
+                            <div class="text-6xl mb-4">❓</div>
+                            <div id="pt-current-team" class="text-lg font-semibold text-indigo-700 mb-4">دور الفريق الأول</div>
+                            <div id="pt-question-text" class="text-xl font-bold text-indigo-800 mb-6">السؤال سيظهر هنا</div>
+                            <div id="pt-question-category" class="bg-indigo-500 text-white px-4 py-2 rounded-full text-sm font-semibold inline-block mb-6">
+                                مثلث المشروع
+                            </div>
+                            
+                            <!-- Answer Options -->
+                            <div id="pt-answers-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <button id="pt-answer-1" class="answer-btn bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white p-4 rounded-xl font-semibold text-lg shadow-lg transform hover:scale-105 transition-all duration-300">
+                                    <div class="text-xl mb-2">A</div>
+                                    <div class="answer-text"></div>
+                                </button>
+                                <button id="pt-answer-2" class="answer-btn bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white p-4 rounded-xl font-semibold text-lg shadow-lg transform hover:scale-105 transition-all duration-300">
+                                    <div class="text-xl mb-2">B</div>
+                                    <div class="answer-text"></div>
+                                </button>
+                                <button id="pt-answer-3" class="answer-btn bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white p-4 rounded-xl font-semibold text-lg shadow-lg transform hover:scale-105 transition-all duration-300">
+                                    <div class="text-xl mb-2">C</div>
+                                    <div class="answer-text"></div>
+                                </button>
+                                <button id="pt-answer-4" class="answer-btn bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white p-4 rounded-xl font-semibold text-lg shadow-lg transform hover:scale-105 transition-all duration-300">
+                                    <div class="text-xl mb-2">D</div>
+                                    <div class="answer-text"></div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Feedback Container -->
+                        <div id="pt-feedback-container" class="hidden mb-8">
+                            <div id="pt-feedback-content" class="rounded-2xl p-6 text-center"></div>
+                        </div>
+
+                        <!-- Game Controls -->
+                        <div class="flex gap-4 justify-center">
+                            <button id="pt-next-question-btn" class="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hidden">
+                                <span class="mr-2">➡️</span>السؤال التالي
+                            </button>
+                            <button id="pt-reset-game-btn" class="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                                <span class="mr-2">🔄</span>إعادة تشغيل
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Game Complete -->
+                    <div id="pt-game-complete" class="hidden text-center">
+                        <div class="text-6xl mb-6">🏆</div>
+                        <div id="pt-winner-announcement" class="text-3xl font-bold text-indigo-800 mb-6">الفائز سيُعلن هنا</div>
+                        <div id="pt-final-results" class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-6 mb-6">
+                            <!-- Final results will be inserted here -->
+                        </div>
+                        <button onclick="resetProjectTriangleGame()" class="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                            <span class="mr-2">🎮</span>لعبة جديدة
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Who Am I Game -->
+        <div id="who-am-i-game" class="hidden">
+            <!-- Exit Button -->
+            <div class="text-left mb-4">
+                <button onclick="showGameSelection()" class="bg-red-500 hover:bg-red-600 text-white w-12 h-12 rounded-full font-bold text-xl transition-all duration-300 transform hover:scale-110 shadow-lg flex items-center justify-center">
+                    ✕
+                </button>
+            </div>
+            <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-orange-200">
+                <div class="bg-gradient-to-r from-orange-600 to-red-600 p-8">
+                    <div class="text-center">
+                        <h3 class="text-3xl font-bold text-white mb-2">
+                            <span class="text-4xl mr-3">❓</span>
+                            من أنا؟
+                        </h3>
+                        <p class="text-orange-100 text-lg">خمن المصطلح التقني من الوصف</p>
+                    </div>
+                </div>
+
+                <div class="p-8">
+                    <div class="text-center mb-8">
+                        <div class="bg-gradient-to-r from-orange-100 to-red-100 who-am-i-effect rounded-2xl p-8 mb-6">
+                            <div class="text-6xl mb-4">🤔</div>
+                            <div id="wai-clue-text" class="text-xl font-semibold text-orange-800 mb-4">
+                                اضغط على "لغز جديد" لبدء اللعبة
+                            </div>
+                            <div id="wai-category" class="bg-orange-500 text-white px-4 py-2 rounded-full text-sm font-semibold inline-block">
+                                المصطلحات التقنية
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="wai-options-container" class="hidden">
+                        <h4 class="text-xl font-bold text-gray-800 text-center mb-6">اختر الإجابة الصحيحة:</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                            <button id="wai-option-1" class="option-btn bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white p-6 rounded-2xl font-semibold text-lg shadow-lg transform hover:scale-105 transition-all duration-300">
+                                <div class="option-text"></div>
+                            </button>
+                            <button id="wai-option-2" class="option-btn bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white p-6 rounded-2xl font-semibold text-lg shadow-lg transform hover:scale-105 transition-all duration-300">
+                                <div class="option-text"></div>
+                            </button>
+                            <button id="wai-option-3" class="option-btn bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white p-6 rounded-2xl font-semibold text-lg shadow-lg transform hover:scale-105 transition-all duration-300">
+                                <div class="option-text"></div>
+                            </button>
+                            <button id="wai-option-4" class="option-btn bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white p-6 rounded-2xl font-semibold text-lg shadow-lg transform hover:scale-105 transition-all duration-300">
+                                <div class="option-text"></div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="wai-feedback-container" class="hidden mb-8">
+                        <div id="wai-feedback-content" class="rounded-2xl p-6 text-center"></div>
+                    </div>
+
+                    <div class="flex gap-4 justify-center">
+                        <button id="wai-new-puzzle-btn" class="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                            <span class="mr-2">❓</span>لغز جديد
+                        </button>
+                        <button id="wai-reset-btn" class="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                            <span class="mr-2">🔄</span>إعادة تشغيل
+                        </button>
+                    </div>
+
+                    <div class="mt-8 text-center">
+                        <div class="bg-gradient-to-r from-orange-50 to-red-50 rounded-2xl p-6">
+                            <div class="grid grid-cols-3 gap-4">
+                                <div>
+                                    <div class="text-2xl font-bold text-orange-600" id="wai-score">0</div>
+                                    <div class="text-sm text-orange-500">النقاط</div>
+                                </div>
+                                <div>
+                                    <div class="text-2xl font-bold text-green-600" id="wai-correct">0</div>
+                                    <div class="text-sm text-green-500">صحيح</div>
+                                </div>
+                                <div>
+                                    <div class="text-2xl font-bold text-red-600" id="wai-wrong">0</div>
+                                    <div class="text-sm text-red-500">خطأ</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // بيانات لعبة قرار المدير
+        const managerScenarios = [
+            {
+                id: 1,
+                category: "إدارة الموردين",
+                icon: "📦",
+                title: "تأخر تسليم المورد",
+                description: "تأخر المورد الرئيسي في تسليم المواد الأساسية للمشروع بأسبوعين، مما يهدد الجدول الزمني للمشروع بالكامل. العميل ينتظر التسليم في الموعد المحدد.",
+                solutions: [
+                    {
+                        type: "reschedule",
+                        title: "إعادة الجدولة",
+                        description: "تعديل الجدول الزمني وإبلاغ العميل بالتأخير",
+                        points: 15,
+                        explanation: "✅ قرار ممتاز! إعادة الجدولة تضمن جودة العمل وتحافظ على الشفافية مع العميل. التواصل المبكر يبني الثقة."
+                    },
+                    {
+                        type: "negotiate",
+                        title: "التفاوض",
+                        description: "التفاوض مع مورد بديل للحصول على المواد بسرعة",
+                        points: 10,
+                        explanation: "⚠️ قرار جيد لكن محفوف بالمخاطر. المورد البديل قد يكون أغلى أو أقل جودة. يحتاج تقييم دقيق للتكلفة والجودة."
+                    },
+                    {
+                        type: "ignore",
+                        title: "تجاهل المشكلة",
+                        description: "انتظار المورد دون اتخاذ أي إجراء",
+                        points: 0,
+                        explanation: "❌ قرار خاطئ! تجاهل المشكلة سيؤدي إلى تفاقمها وفقدان ثقة العميل. المدير الناجح يتعامل مع المشاكل فور ظهورها."
+                    }
+                ],
+                correctSolution: 0
+            },
+            {
+                id: 2,
+                category: "إدارة الفريق",
+                icon: "👥",
+                title: "تضارب بين أعضاء الفريق",
+                description: "نشب خلاف حاد بين مطور البرمجيات ومصمم الواجهات حول طريقة تنفيذ إحدى الميزات، مما أثر على إنتاجية الفريق وأجواء العمل.",
+                solutions: [
+                    {
+                        type: "reschedule",
+                        title: "إعادة الجدولة",
+                        description: "تأجيل المهمة المتنازع عليها لوقت لاحق",
+                        points: 5,
+                        explanation: "⚠️ حل مؤقت فقط. تأجيل المشكلة لن يحلها، بل قد يزيد من التوتر. المشكلة ستعود للظهور لاحقاً."
+                    },
+                    {
+                        type: "negotiate",
+                        title: "التفاوض",
+                        description: "عقد اجتماع لحل الخلاف والوصول لحل وسط",
+                        points: 15,
+                        explanation: "✅ قرار ممتاز! الحوار والتفاوض يحل الخلافات ويقوي العلاقات. الوصول لحل وسط يرضي الطرفين هو مهارة قيادية مهمة."
+                    },
+                    {
+                        type: "ignore",
+                        title: "تجاهل المشكلة",
+                        description: "ترك الفريق يحل المشكلة بنفسه",
+                        points: 0,
+                        explanation: "❌ قرار خاطئ! تجاهل الخلافات يؤدي إلى تدهور بيئة العمل وانخفاض الإنتاجية. دور المدير هو حل النزاعات."
+                    }
+                ],
+                correctSolution: 1
+            },
+            {
+                id: 3,
+                category: "إدارة التكلفة",
+                icon: "💰",
+                title: "زيادة في التكلفة",
+                description: "ارتفعت تكلفة المشروع بنسبة 25% عن المخطط له بسبب تغييرات في متطلبات العميل وارتفاع أسعار المواد الخام.",
+                solutions: [
+                    {
+                        type: "reschedule",
+                        title: "إعادة الجدولة",
+                        description: "تقسيم المشروع لمراحل لتوزيع التكلفة",
+                        points: 10,
+                        explanation: "⚠️ حل جزئي. تقسيم المشروع يساعد في إدارة التدفق النقدي لكن لا يحل مشكلة الزيادة في التكلفة الإجمالية."
+                    },
+                    {
+                        type: "negotiate",
+                        title: "التفاوض",
+                        description: "التفاوض مع العميل لتعديل الميزانية أو النطاق",
+                        points: 15,
+                        explanation: "✅ قرار صحيح! التفاوض مع العميل لتعديل الميزانية أو تقليل النطاق يحافظ على ربحية المشروع ويضمن الشفافية."
+                    },
+                    {
+                        type: "ignore",
+                        title: "تجاهل المشكلة",
+                        description: "المتابعة بنفس الميزانية وتحمل الخسارة",
+                        points: 0,
+                        explanation: "❌ قرار كارثي! تجاهل زيادة التكلفة يؤدي إلى خسائر مالية وقد يهدد استمرارية الشركة. يجب معالجة المشكلة فوراً."
+                    }
+                ],
+                correctSolution: 1
+            },
+            {
+                id: 4,
+                category: "إدارة الجودة",
+                icon: "🔍",
+                title: "اكتشاف خطأ كبير قبل التسليم",
+                description: "اكتشف فريق ضمان الجودة خطأ برمجي خطير في النظام قبل يوم واحد من موعد التسليم النهائي للعميل. إصلاح الخطأ يحتاج 3 أيام على الأقل.",
+                solutions: [
+                    {
+                        type: "reschedule",
+                        title: "تأجيل التسليم",
+                        description: "إبلاغ العميل بالخطأ وتأجيل التسليم لإصلاحه",
+                        points: 15,
+                        explanation: "✅ قرار صحيح! الشفافية مع العميل وضمان جودة المنتج أهم من الالتزام بموعد خاطئ. هذا يحافظ على سمعة الشركة."
+                    },
+                    {
+                        type: "negotiate",
+                        title: "تسليم جزئي",
+                        description: "تسليم الأجزاء السليمة وإصلاح الخطأ لاحقاً",
+                        points: 8,
+                        explanation: "⚠️ حل مقبول جزئياً. يحافظ على الموعد لكن قد يؤثر على تجربة المستخدم. يحتاج موافقة العميل المسبقة."
+                    },
+                    {
+                        type: "ignore",
+                        title: "التسليم كما هو",
+                        description: "تسليم النظام مع الخطأ وإصلاحه لاحقاً",
+                        points: 0,
+                        explanation: "❌ قرار خطير جداً! تسليم منتج معيب يضر بسمعة الشركة ويفقد ثقة العميل. قد يؤدي لمشاكل قانونية."
+                    }
+                ],
+                correctSolution: 0
+            },
+            {
+                id: 5,
+                category: "إدارة الموارد البشرية",
+                icon: "👨‍💼",
+                title: "استقالة مطور رئيسي",
+                description: "قدم المطور الرئيسي في المشروع استقالته فجأة في منتصف المشروع، وهو الوحيد الذي يعرف تفاصيل الكود المعقد. المشروع في مرحلة حرجة.",
+                solutions: [
+                    {
+                        type: "reschedule",
+                        title: "إعادة هيكلة المشروع",
+                        description: "تأجيل المشروع وإعادة كتابة الكود بفريق جديد",
+                        points: 8,
+                        explanation: "⚠️ حل مكلف لكن آمن. يضمن فهم الكود الجديد لكن يحتاج وقت ومال إضافي. قد يكون الخيار الوحيد أحياناً."
+                    },
+                    {
+                        type: "negotiate",
+                        title: "التفاوض للاستمرار",
+                        description: "التفاوض مع المطور للبقاء فترة انتقالية ونقل المعرفة",
+                        points: 15,
+                        explanation: "✅ قرار ذكي! التفاوض لفترة انتقالية ينقل المعرفة للفريق ويقلل المخاطر. استثمار قصير المدى لحماية طويلة المدى."
+                    },
+                    {
+                        type: "ignore",
+                        title: "المتابعة بدونه",
+                        description: "محاولة فهم الكود والمتابعة بالفريق الحالي",
+                        points: 3,
+                        explanation: "❌ قرار محفوف بالمخاطر! المتابعة بدون نقل المعرفة قد يؤدي لأخطاء كبيرة وتأخير أكبر. الوقت المفقود سيكون أكثر."
+                    }
+                ],
+                correctSolution: 1
+            },
+            {
+                id: 6,
+                category: "إدارة المخاطر",
+                icon: "⚠️",
+                title: "تهديد أمني للنظام",
+                description: "اكتشف فريق الأمان ثغرة أمنية خطيرة في النظام المطور، وهناك تقارير عن محاولات اختراق مماثلة في الشركات المنافسة. النظام يحتوي على بيانات حساسة للعملاء.",
+                solutions: [
+                    {
+                        type: "reschedule",
+                        title: "إيقاف النظام فوراً",
+                        description: "إيقاف النظام مؤقتاً حتى إصلاح الثغرة الأمنية",
+                        points: 15,
+                        explanation: "✅ قرار حكيم! أمان البيانات أولوية قصوى. الإيقاف المؤقت أفضل من تسريب بيانات العملاء وفقدان الثقة نهائياً."
+                    },
+                    {
+                        type: "negotiate",
+                        title: "تشديد المراقبة",
+                        description: "زيادة المراقبة الأمنية والعمل على الإصلاح تدريجياً",
+                        points: 8,
+                        explanation: "⚠️ حل مؤقت محفوف بالمخاطر. المراقبة المشددة تقلل المخاطر لكن لا تلغيها. يحتاج خطة إصلاح سريعة."
+                    },
+                    {
+                        type: "ignore",
+                        title: "تجاهل التهديد",
+                        description: "المتابعة العادية وتأجيل معالجة الثغرة",
+                        points: 0,
+                        explanation: "❌ قرار كارثي! تجاهل التهديدات الأمنية قد يؤدي لاختراق البيانات ومشاكل قانونية ومالية ضخمة."
+                    }
+                ],
+                correctSolution: 0
+            },
+            {
+                id: 7,
+                category: "إدارة العملاء",
+                icon: "🤝",
+                title: "تغيير متطلبات العميل",
+                description: "طلب العميل تغييرات جذرية في المشروع بعد إنجاز 70% منه. التغييرات تحتاج إعادة تصميم كاملة وستزيد التكلفة بنسبة 40% والوقت بشهرين إضافيين.",
+                solutions: [
+                    {
+                        type: "reschedule",
+                        title: "قبول التغيير",
+                        description: "قبول التغييرات وإعادة تخطيط المشروع بالكامل",
+                        points: 5,
+                        explanation: "⚠️ قرار مكلف! قبول التغييرات دون تفاوض يضر بربحية المشروع. يجب تقييم التكلفة والعائد أولاً."
+                    },
+                    {
+                        type: "negotiate",
+                        title: "التفاوض على التكلفة",
+                        description: "التفاوض مع العميل على التكلفة الإضافية والجدول الزمني",
+                        points: 15,
+                        explanation: "✅ قرار ممتاز! التفاوض يحمي مصالح الشركة ويوضح تأثير التغييرات. العميل يجب أن يتحمل تكلفة قراراته."
+                    },
+                    {
+                        type: "ignore",
+                        title: "رفض التغيير",
+                        description: "رفض التغييرات والالتزام بالخطة الأصلية",
+                        points: 8,
+                        explanation: "⚠️ قرار صعب لكن مبرر أحياناً. الالتزام بالاتفاق الأصلي يحمي الشركة لكن قد يضر بعلاقة العميل."
+                    }
+                ],
+                correctSolution: 1
+            },
+            {
+                id: 8,
+                category: "إدارة التقنية",
+                icon: "💻",
+                title: "فشل في الخادم الرئيسي",
+                description: "تعطل الخادم الرئيسي للمشروع بسبب عطل في الأجهزة، والنسخة الاحتياطية الأخيرة عمرها أسبوع. هناك بيانات مهمة مفقودة وعملاء ينتظرون الخدمة.",
+                solutions: [
+                    {
+                        type: "reschedule",
+                        title: "استعادة النسخة الاحتياطية",
+                        description: "استعادة النسخة الاحتياطية وإعادة إدخال البيانات المفقودة",
+                        points: 12,
+                        explanation: "✅ قرار عملي! استعادة النسخة الاحتياطية تعيد الخدمة سريعاً. فقدان أسبوع من البيانات أفضل من فقدان كل شيء."
+                    },
+                    {
+                        type: "negotiate",
+                        title: "استئجار خادم مؤقت",
+                        description: "استئجار خادم سحابي مؤقت ومحاولة استعادة البيانات",
+                        points: 15,
+                        explanation: "✅ قرار ممتاز! الخادم المؤقت يعيد الخدمة فوراً ويعطي وقت لاستعادة البيانات. حل سريع وفعال."
+                    },
+                    {
+                        type: "ignore",
+                        title: "انتظار إصلاح الخادم",
+                        description: "انتظار إصلاح الخادم الأصلي دون اتخاذ إجراءات",
+                        points: 0,
+                        explanation: "❌ قرار كارثي! انتظار الإصلاح يعني توقف الخدمة لفترة طويلة وفقدان العملاء. الوقت عامل حاسم في التقنية."
+                    }
+                ],
+                correctSolution: 1
+            },
+            {
+                id: 9,
+                category: "إدارة الاتصالات",
+                icon: "📞",
+                title: "سوء فهم في المتطلبات",
+                description: "اكتشف الفريق أن هناك سوء فهم كبير في متطلبات المشروع مع العميل. ما تم تطويره لا يطابق توقعات العميل، والمشروع في مرحلة متقدمة 60%.",
+                solutions: [
+                    {
+                        type: "reschedule",
+                        title: "إعادة التطوير",
+                        description: "إعادة تطوير المشروع وفقاً للمتطلبات الصحيحة",
+                        points: 8,
+                        explanation: "⚠️ حل مكلف لكن ضروري أحياناً. إعادة التطوير تضمن رضا العميل لكن تحتاج موارد إضافية كبيرة."
+                    },
+                    {
+                        type: "negotiate",
+                        title: "اجتماع توضيحي",
+                        description: "عقد اجتماع مع العميل لتوضيح الوضع والوصول لحل وسط",
+                        points: 15,
+                        explanation: "✅ قرار حكيم! الحوار المفتوح يحل سوء الفهم ويجد حلول إبداعية. قد يقبل العميل تعديلات بسيطة بدلاً من إعادة كاملة."
+                    },
+                    {
+                        type: "ignore",
+                        title: "إقناع العميل",
+                        description: "محاولة إقناع العميل بأن ما تم تطويره مناسب",
+                        points: 3,
+                        explanation: "❌ قرار خاطئ! إقناع العميل بشيء لا يريده يضر بالعلاقة ويقلل رضاه. العميل يعرف احتياجاته أفضل."
+                    }
+                ],
+                correctSolution: 1
+            },
+            {
+                id: 10,
+                category: "إدارة الوقت",
+                icon: "⏰",
+                title: "ضغط الوقت الشديد",
+                description: "تبقى أسبوعان فقط لتسليم المشروع، لكن الفريق يحتاج شهر إضافي لإنهاء جميع الميزات المطلوبة بالجودة المناسبة. العميل مصر على الموعد الأصلي.",
+                solutions: [
+                    {
+                        type: "reschedule",
+                        title: "طلب تمديد الموعد",
+                        description: "التواصل مع العميل لطلب تمديد الموعد النهائي",
+                        points: 12,
+                        explanation: "✅ قرار صادق! طلب التمديد يحافظ على الجودة ويظهر الشفافية. أفضل من تسليم منتج ناقص أو معيب."
+                    },
+                    {
+                        type: "negotiate",
+                        title: "تقليل النطاق",
+                        description: "التفاوض لتسليم الميزات الأساسية فقط في الموعد المحدد",
+                        points: 15,
+                        explanation: "✅ قرار ذكي! تسليم الميزات الأساسية يلبي الموعد ويحافظ على الجودة. الميزات الإضافية يمكن تسليمها لاحقاً."
+                    },
+                    {
+                        type: "ignore",
+                        title: "العمل الإضافي المكثف",
+                        description: "زيادة ساعات العمل والضغط على الفريق لإنهاء كل شيء",
+                        points: 5,
+                        explanation: "⚠️ حل قصير المدى خطير! الضغط المفرط يؤدي لأخطاء وإرهاق الفريق. قد ينتج منتج رديء ويضر بصحة الموظفين."
+                    }
+                ],
+                correctSolution: 1
+            }
+        ];
+
+        // بيانات لعبة سؤال المفتاح
+        const keyQuestions = [
+            {
+                question: "ما هي طريقة أيزنهاور؟",
+                category: "تقنيات التخطيط",
+                answers: ["تقنية لإدارة الميزانية", "مصفوفة لتحديد أولويات المهام", "طريقة لتقدير الوقت", "أداة لإدارة المخاطر"],
+                correct: 1,
+                explanation: "مصفوفة أيزنهاور تقسم المهام إلى أربعة أقسام حسب الأهمية والعجلة: مهم وعاجل، مهم وغير عاجل، غير مهم وعاجل، غير مهم وغير عاجل."
+            },
+            {
+                question: "ما الفرق بين الموارد القابلة للتخزين وغير القابلة للتخزين؟",
+                category: "إدارة الموارد",
+                answers: ["لا يوجد فرق بينهما", "القابلة للتخزين يمكن حفظها للاستخدام لاحقاً، وغير القابلة للتخزين تُستهلك فوراً", "القابلة للتخزين أغلى من غير القابلة للتخزين", "القابلة للتخزين تحتاج مساحة أكبر فقط"],
+                correct: 1,
+                explanation: "الموارد القابلة للتخزين (مثل المواد الخام) يمكن حفظها واستخدامها لاحقاً، بينما الموارد غير القابلة للتخزين (مثل الوقت والخدمات) يجب استخدامها فوراً وإلا تُفقد."
+            },
+            {
+                question: "ما عناصر تخطيط المشروع؟",
+                category: "تخطيط المشاريع",
+                answers: ["الوقت والتكلفة فقط", "النطاق والوقت والتكلفة والجودة والموارد والمخاطر", "الفريق والميزانية فقط", "الأهداف والنتائج فقط"],
+                correct: 1,
+                explanation: "تخطيط المشروع يشمل عناصر متعددة: تحديد النطاق، التخطيط الزمني، تقدير التكلفة، تخطيط الجودة، تخطيط الموارد البشرية والمادية، وإدارة المخاطر."
+            },
+            {
+                question: "ما هو الهدف من تحديد النطاق في المشروع؟",
+                category: "إدارة النطاق",
+                answers: ["تحديد الميزانية المطلوبة", "تعريف ما سيتم تسليمه وما لن يتم تسليمه", "اختيار أعضاء الفريق", "تحديد الجدول الزمني"],
+                correct: 1,
+                explanation: "تحديد النطاق يوضح بدقة ما سيشمله المشروع وما لن يشمله، مما يمنع سوء الفهم ويضمن توقعات واضحة لجميع الأطراف."
+            },
+            {
+                question: "ما هي أهمية الجدول الزمني في المشروع؟",
+                category: "إدارة الوقت",
+                answers: ["لتحديد التكلفة فقط", "لتنظيم المهام وتحديد مواعيد التسليم ومتابعة التقدم", "لاختيار الفريق المناسب", "لتحديد المخاطر المحتملة"],
+                correct: 1,
+                explanation: "الجدول الزمني ينظم تسلسل المهام، يحدد مواعيد البداية والانتهاء، يساعد في تخصيص الموارد، ويمكّن من متابعة تقدم المشروع وتحديد التأخيرات."
+            }
+        ];
+
+        // بيانات لعبة الترتيب التفاعلية - خطوات إعداد خطة المشروع
+        const sortingChallenges = [
+            {
+                title: "خطوات إعداد خطة المشروع",
+                description: "رتب خطوات إعداد خطة المشروع بالتسلسل الصحيح من البداية حتى النهاية",
+                items: [
+                    { 
+                        id: 1, 
+                        text: "تحديد النطاق", 
+                        order: 1,
+                        icon: "🎯",
+                        hint: "الخطوة الأولى هي تحديد ما سيتم إنجازه في المشروع وما لن يتم إنجازه",
+                        explanation: "تحديد النطاق يوضح حدود المشروع والنتائج المتوقعة"
+                    },
+                    { 
+                        id: 2, 
+                        text: "تحديد الموارد", 
+                        order: 2,
+                        icon: "👥",
+                        hint: "بعد معرفة ما سنعمله، نحتاج لتحديد الأشخاص والأدوات المطلوبة",
+                        explanation: "تحديد الموارد البشرية والمادية والتقنية اللازمة للمشروع"
+                    },
+                    { 
+                        id: 3, 
+                        text: "وضع الجدول الزمني", 
+                        order: 3,
+                        icon: "📅",
+                        hint: "بعد معرفة الموارد المتاحة، يمكننا تحديد متى سيتم إنجاز كل مهمة",
+                        explanation: "تخطيط المواعيد الزمنية لجميع أنشطة المشروع"
+                    },
+                    { 
+                        id: 4, 
+                        text: "تقدير التكلفة", 
+                        order: 4,
+                        icon: "💰",
+                        hint: "بعد تحديد الموارد والوقت، يمكننا حساب التكلفة الإجمالية",
+                        explanation: "حساب التكلفة المالية الإجمالية للمشروع بناءً على الموارد والوقت"
+                    },
+                    { 
+                        id: 5, 
+                        text: "توزيع المهام", 
+                        order: 5,
+                        icon: "📋",
+                        hint: "بعد التخطيط الكامل، نبدأ بتوزيع المهام على أعضاء الفريق",
+                        explanation: "تخصيص المهام والمسؤوليات لأعضاء فريق المشروع"
+                    },
+                    { 
+                        id: 6, 
+                        text: "المراقبة", 
+                        order: 6,
+                        icon: "📊",
+                        hint: "أثناء التنفيذ، نحتاج لمتابعة التقدم والتحكم في الأداء",
+                        explanation: "متابعة تقدم العمل ومراقبة الأداء والتحكم في المشروع"
+                    },
+                    { 
+                        id: 7, 
+                        text: "الإنهاء", 
+                        order: 7,
+                        icon: "✅",
+                        hint: "الخطوة الأخيرة هي إغلاق المشروع وتسليم النتائج النهائية",
+                        explanation: "إنهاء المشروع وتسليم النتائج وإغلاق جميع الأنشطة"
+                    }
+                ]
+            }
+        ];
+
+        // بيانات لعبة مثلث المشروع
+        const projectTriangleQuestions = [
+            {
+                question: "ما هي العناصر الثلاثة الأساسية في مثلث إدارة المشروع؟",
+                category: "أساسيات المثلث",
+                answers: ["الوقت والجودة والأمان", "النطاق والوقت والتكلفة", "الفريق والميزانية والجدولة", "التخطيط والتنفيذ والمراقبة"],
+                correct: 1,
+                trianglePiece: "scope",
+                explanation: "مثلث المشروع يتكون من ثلاثة عناصر أساسية: النطاق (ما سيتم إنجازه)، الوقت (متى سيتم الإنجاز)، والتكلفة (كم سيكلف المشروع)."
+            },
+            {
+                question: "إذا زاد نطاق المشروع، ماذا يحدث عادة للوقت والتكلفة؟",
+                category: "تأثير النطاق",
+                answers: ["يقلان معاً", "يزيدان معاً", "الوقت يزيد والتكلفة تقل", "لا يتأثران"],
+                correct: 1,
+                trianglePiece: "time",
+                explanation: "عند زيادة النطاق، عادة ما يزيد الوقت المطلوب والتكلفة أيضاً، لأن المزيد من العمل يحتاج مزيد من الوقت والموارد."
+            },
+            {
+                question: "ما المقصود بـ 'النطاق' في مثلث المشروع؟",
+                category: "تعريف النطاق",
+                answers: ["الميزانية المخصصة للمشروع", "الوقت المحدد لإنهاء المشروع", "حجم وتفاصيل العمل المطلوب إنجازه", "عدد أعضاء الفريق"],
+                correct: 2,
+                trianglePiece: "cost",
+                explanation: "النطاق يشير إلى حجم وتفاصيل العمل المطلوب إنجازه في المشروع، بما يشمل الميزات والوظائف والمتطلبات."
+            },
+            {
+                question: "لماذا يُسمى بـ 'مثلث المشروع'؟",
+                category: "مفهوم المثلث",
+                answers: ["لأن له ثلاثة أضلاع متساوية", "لأن العناصر الثلاثة مترابطة ومتوازنة", "لأنه يحتاج ثلاثة أشخاص لإدارته", "لأنه يستغرق ثلاثة أشهر"],
+                correct: 1,
+                trianglePiece: "scope",
+                explanation: "يُسمى مثلث المشروع لأن العناصر الثلاثة (النطاق والوقت والتكلفة) مترابطة، وأي تغيير في أحدها يؤثر على الآخرين."
+            },
+            {
+                question: "إذا كان لديك ميزانية محدودة، كيف يمكن إنجاز المشروع؟",
+                category: "إدارة التكلفة",
+                answers: ["زيادة الوقت أو تقليل النطاق", "تجاهل الجودة", "العمل بدون خطة", "إلغاء المشروع"],
+                correct: 0,
+                trianglePiece: "time",
+                explanation: "مع ميزانية محدودة، يمكن إما زيادة الوقت المتاح (للعمل بوتيرة أبطأ وتكلفة أقل) أو تقليل النطاق (إنجاز أقل بنفس التكلفة)."
+            },
+            {
+                question: "ما هو التحدي الأكبر في إدارة مثلث المشروع؟",
+                category: "تحديات الإدارة",
+                answers: ["رسم المثلث بشكل صحيح", "الحفاظ على التوازن بين العناصر الثلاثة", "اختيار اللون المناسب للمثلث", "حفظ أسماء العناصر"],
+                correct: 1,
+                trianglePiece: "cost",
+                explanation: "التحدي الأكبر هو الحفاظ على التوازن بين النطاق والوقت والتكلفة، حيث أن تغيير أي عنصر يؤثر على الآخرين."
+            },
+            {
+                question: "متى يكون من المقبول تغيير أحد عناصر المثلث؟",
+                category: "مرونة المشروع",
+                answers: ["أبداً، المثلث ثابت", "عند الحاجة مع إعادة تقييم العناصر الأخرى", "فقط في بداية المشروع", "فقط عند انتهاء المشروع"],
+                correct: 1,
+                trianglePiece: "scope",
+                explanation: "يمكن تغيير عناصر المثلث عند الحاجة، لكن يجب إعادة تقييم وتعديل العناصر الأخرى للحفاظ على التوازن."
+            },
+            {
+                question: "كيف يؤثر ضغط الوقت على المشروع؟",
+                category: "إدارة الوقت",
+                answers: ["يحسن الجودة", "قد يزيد التكلفة أو يقلل النطاق", "لا يؤثر على شيء", "يقلل التكلفة دائماً"],
+                correct: 1,
+                trianglePiece: "time",
+                explanation: "ضغط الوقت قد يتطلب موارد إضافية (زيادة التكلفة) أو تقليل حجم العمل (تقليل النطاق) للوفاء بالموعد المحدد."
+            },
+            {
+                question: "ما أهمية فهم مثلث المشروع لمدير المشروع؟",
+                category: "أهمية المثلث",
+                answers: ["لرسم مخططات جميلة", "لاتخاذ قرارات متوازنة ومدروسة", "لإعجاب العملاء", "لحفظ المعلومات فقط"],
+                correct: 1,
+                trianglePiece: "cost",
+                explanation: "فهم مثلث المشروع يساعد مدير المشروع على اتخاذ قرارات متوازنة ومدروسة عند مواجهة تغييرات أو تحديات في المشروع."
+            }
+        ];
+
+        // بيانات لعبة من أنا - وحدة التخطيط للمشروع
+        const whoAmIPuzzles = [
+            {
+                clue: "أحدد النطاق والوقت والتكلفة في المشروع",
+                category: "قيود المشروع",
+                options: ["المثلث", "المربع", "الدائرة", "المستطيل"],
+                correct: 0,
+                explanation: "مثلث المشروع يمثل القيود الثلاثة الأساسية: النطاق والوقت والتكلفة، وأي تغيير في أحدها يؤثر على الآخرين."
+            },
+            {
+                clue: "أجمع الفريق وأضع الخطة وأتابع التنفيذ",
+                category: "أدوار المشروع",
+                options: ["المطور", "مدير المشروع", "المحلل", "المصمم"],
+                correct: 1,
+                explanation: "مدير المشروع هو المسؤول عن تجميع الفريق ووضع الخطط ومتابعة تنفيذ المشروع من البداية حتى النهاية."
+            },
+            {
+                clue: "أحدد الأولويات باستخدام طريقتين: ABC وأيزنهاور",
+                category: "تقنيات التخطيط",
+                options: ["إدارة المخاطر", "التخطيط الزمني", "إدارة الجودة", "إدارة التكلفة"],
+                correct: 1,
+                explanation: "التخطيط الزمني يستخدم تقنيات مثل ABC (حسب الأهمية) ومصفوفة أيزنهاور (مهم/عاجل) لتحديد أولويات المهام."
+            },
+            {
+                clue: "أنا مخطط بياني يُظهر المهام والأنشطة مقابل الزمن، أساعد في تتبع تقدم المشروع وأشتهر باسم عالم أمريكي",
+                category: "أدوات التخطيط",
+                options: ["مخطط جانت", "مخطط PERT", "مخطط التدفق", "الهيكل التنظيمي"],
+                correct: 0,
+                explanation: "مخطط جانت هو أداة أساسية في إدارة المشاريع يُظهر الجدول الزمني للمهام والأنشطة بصرياً."
+            },
+            {
+                clue: "أنا منهجية لإدارة المشاريع تركز على التحسين المستمر والتسليم السريع، أعمل بدورات قصيرة تُسمى سبرينت",
+                category: "منهجيات إدارة المشاريع",
+                options: ["الشلال", "أجايل", "الحلزوني", "النموذج الأولي"],
+                correct: 1,
+                explanation: "منهجية أجايل تركز على التطوير التكراري والتسليم المستمر مع التكيف مع التغييرات."
+            },
+            {
+                clue: "أنا وثيقة تحدد أهداف المشروع ونطاقه والموارد المطلوبة، أُعتبر نقطة البداية الرسمية لأي مشروع",
+                category: "وثائق المشروع",
+                options: ["خطة المشروع", "ميثاق المشروع", "تقرير الحالة", "دليل المستخدم"],
+                correct: 1,
+                explanation: "ميثاق المشروع هو الوثيقة الرسمية التي تُفوض بدء المشروع وتحدد أهدافه الأساسية."
+            },
+            {
+                clue: "أنا تقنية لتحديد المسار الأطول في شبكة المشروع، أساعد في معرفة أقل وقت ممكن لإنجاز المشروع",
+                category: "تحليل المسار",
+                options: ["المسار الحرج", "تحليل المخاطر", "تقدير التكلفة", "إدارة الجودة"],
+                correct: 0,
+                explanation: "المسار الحرج هو أطول مسار في شبكة المشروع ويحدد أقل وقت ممكن لإنجاز المشروع."
+            },
+            {
+                clue: "أنا هيكل يُقسم المشروع إلى أجزاء أصغر قابلة للإدارة، أُرتب بشكل هرمي من العام إلى التفصيلي",
+                category: "تنظيم المشروع",
+                options: ["الجدول الزمني", "هيكل تجزئة العمل", "مصفوفة المسؤوليات", "خريطة أصحاب المصلحة"],
+                correct: 1,
+                explanation: "هيكل تجزئة العمل (WBS) يُقسم المشروع إلى مكونات أصغر قابلة للإدارة والتحكم."
+            },
+            {
+                clue: "أنا عملية تحديد وتحليل الأحداث المحتملة التي قد تؤثر على المشروع سلباً أو إيجاباً",
+                category: "إدارة المخاطر",
+                options: ["تحليل التكلفة", "إدارة المخاطر", "ضمان الجودة", "إدارة التغيير"],
+                correct: 1,
+                explanation: "إدارة المخاطر تشمل تحديد وتحليل وتخطيط الاستجابة للمخاطر المحتملة في المشروع."
+            },
+            {
+                clue: "أنا مجموعة من الأشخاص المهتمين بالمشروع أو المتأثرين به، أشمل العملاء والمستخدمين والإدارة",
+                category: "إدارة أصحاب المصلحة",
+                options: ["فريق المشروع", "أصحاب المصلحة", "المستشارين", "المقاولين"],
+                correct: 1,
+                explanation: "أصحاب المصلحة هم جميع الأفراد والمجموعات المهتمة بالمشروع أو المتأثرة بنتائجه."
+            }
+        ];
+
+        // متغيرات اللعبة
+        let currentGame = '';
+        let gameStates = {
+            managerDecision: {
+                currentScenarioIndex: 0,
+                totalScore: 0,
+                scenariosSolved: 0,
+                correctAnswers: 0,
+                gameStarted: false,
+                usedScenarios: []
+            },
+            keyQuestion: {
+                currentQuestionIndex: 0,
+                score: 0,
+                correct: 0,
+                wrong: 0
+            },
+            interactiveSorting: {
+                currentChallengeIndex: 0,
+                score: 0,
+                completed: 0,
+                currentItems: [],
+                sortedItems: []
+            },
+            whoAmI: {
+                currentPuzzleIndex: 0,
+                score: 0,
+                correct: 0,
+                wrong: 0
+            },
+            projectTriangle: {
+                numberOfTeams: 1,
+                currentTeam: 0,
+                currentQuestionIndex: 0,
+                teams: [],
+                usedQuestions: [],
+                gameStarted: false,
+                winner: null
+            }
+        };
+
+        // دوال التنقل بين الألعاب
+        function showGame(gameType) {
+            // إخفاء جميع الألعاب
+            document.getElementById('game-selection').classList.add('hidden');
+            document.getElementById('manager-decision-game').classList.add('hidden');
+            document.getElementById('key-question-game').classList.add('hidden');
+            document.getElementById('interactive-sorting-game').classList.add('hidden');
+            document.getElementById('project-triangle-game').classList.add('hidden');
+            document.getElementById('who-am-i-game').classList.add('hidden');
+            
+            // إظهار اللعبة المحددة
+            document.getElementById(gameType + '-game').classList.remove('hidden');
+            document.getElementById('back-to-menu').classList.remove('hidden');
+            
+            // إظهار زر الخروج للعبة المحددة
+            const exitButtons = document.querySelectorAll('#manager-decision-game > div:first-child, #key-question-game > div:first-child, #interactive-sorting-game > div:first-child, #project-triangle-game > div:first-child, #who-am-i-game > div:first-child');
+            exitButtons.forEach(btn => btn.classList.remove('hidden'));
+            
+            currentGame = gameType;
+            
+            // تهيئة اللعبة حسب النوع
+            switch(gameType) {
+                case 'manager-decision':
+                    initManagerDecisionGame();
+                    break;
+                case 'key-question':
+                    initKeyQuestionGame();
+                    break;
+                case 'interactive-sorting':
+                    initInteractiveSortingGame();
+                    break;
+                case 'project-triangle':
+                    initProjectTriangleGame();
+                    break;
+                case 'who-am-i':
+                    initWhoAmIGame();
+                    break;
+            }
+        }
+
+        function showGameSelection() {
+            // إخفاء جميع الألعاب
+            document.getElementById('manager-decision-game').classList.add('hidden');
+            document.getElementById('key-question-game').classList.add('hidden');
+            document.getElementById('interactive-sorting-game').classList.add('hidden');
+            document.getElementById('project-triangle-game').classList.add('hidden');
+            document.getElementById('who-am-i-game').classList.add('hidden');
+            document.getElementById('back-to-menu').classList.add('hidden');
+            
+            // إظهار قائمة الألعاب
+            document.getElementById('game-selection').classList.remove('hidden');
+            currentGame = '';
+        }
+
+        function showAllGames() {
+            // إظهار جميع الألعاب
+            document.getElementById('game-selection').classList.add('hidden');
+            document.getElementById('manager-decision-game').classList.remove('hidden');
+            document.getElementById('key-question-game').classList.remove('hidden');
+            document.getElementById('interactive-sorting-game').classList.remove('hidden');
+            document.getElementById('project-triangle-game').classList.remove('hidden');
+            document.getElementById('who-am-i-game').classList.remove('hidden');
+            document.getElementById('back-to-menu').classList.remove('hidden');
+            
+            // إخفاء أزرار الخروج الفردية عند عرض جميع الألعاب
+            const exitButtons = document.querySelectorAll('#manager-decision-game > div:first-child, #key-question-game > div:first-child, #interactive-sorting-game > div:first-child, #project-triangle-game > div:first-child, #who-am-i-game > div:first-child');
+            exitButtons.forEach(btn => btn.classList.add('hidden'));
+            
+            // تهيئة جميع الألعاب
+            initManagerDecisionGame();
+            initKeyQuestionGame();
+            initInteractiveSortingGame();
+            initProjectTriangleGame();
+            initWhoAmIGame();
+        }
+
+        // دوال لعبة قرار المدير
+        function initManagerDecisionGame() {
+            updateManagerDecisionStats();
+            
+            // ربط الأحداث
+            document.getElementById('md-new-scenario-btn').onclick = showNewManagerScenario;
+            document.getElementById('md-next-scenario-btn').onclick = showNewManagerScenario;
+            document.getElementById('md-reset-game-btn').onclick = resetManagerDecisionGame;
+        }
+
+        function showNewManagerScenario() {
+            const state = gameStates.managerDecision;
+            
+            if (!state.gameStarted) {
+                state.gameStarted = true;
+            }
+
+            state.currentScenarioIndex = getRandomManagerScenario();
+            const scenario = managerScenarios[state.currentScenarioIndex];
+            
+            // تحديث عرض الموقف
+            document.getElementById('md-scenario-icon').textContent = scenario.icon;
+            document.getElementById('md-scenario-category').textContent = scenario.category;
+            document.getElementById('md-scenario-text').textContent = scenario.description;
+            
+            // تحديث أزرار الحلول
+            const solutionBtns = [
+                document.getElementById('md-solution-1'),
+                document.getElementById('md-solution-2'),
+                document.getElementById('md-solution-3')
+            ];
+            
+            solutionBtns.forEach((btn, index) => {
+                const solution = scenario.solutions[index];
+                btn.querySelector('.solution-desc').textContent = solution.description;
+                btn.onclick = () => selectManagerSolution(index);
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+            });
+            
+            // إظهار الحلول وإخفاء التغذية الراجعة
+            document.getElementById('md-solutions-container').classList.remove('hidden');
+            document.getElementById('md-feedback-container').classList.add('hidden');
+            document.getElementById('md-next-scenario-btn').classList.add('hidden');
+            
+            // تحديث العداد
+            document.getElementById('md-scenario-counter').textContent = `${state.scenariosSolved + 1} / 10`;
+        }
+
+        function getRandomManagerScenario() {
+            const state = gameStates.managerDecision;
+            if (state.usedScenarios.length === managerScenarios.length) {
+                state.usedScenarios = [];
+            }
+            
+            let availableScenarios = managerScenarios.filter((_, index) => !state.usedScenarios.includes(index));
+            let randomIndex = Math.floor(Math.random() * availableScenarios.length);
+            let scenarioIndex = managerScenarios.indexOf(availableScenarios[randomIndex]);
+            
+            state.usedScenarios.push(scenarioIndex);
+            return scenarioIndex;
+        }
+
+        function selectManagerSolution(solutionIndex) {
+            const state = gameStates.managerDecision;
+            const scenario = managerScenarios[state.currentScenarioIndex];
+            const selectedSolution = scenario.solutions[solutionIndex];
+            const isCorrect = solutionIndex === scenario.correctSolution;
+            
+            // تعطيل جميع الأزرار
+            const solutionBtns = [
+                document.getElementById('md-solution-1'),
+                document.getElementById('md-solution-2'),
+                document.getElementById('md-solution-3')
+            ];
+            
+            solutionBtns.forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add('opacity-50');
+            });
+            
+            // تحديث النقاط والإحصائيات
+            state.totalScore += selectedSolution.points;
+            state.scenariosSolved++;
+            
+            if (isCorrect) {
+                state.correctAnswers++;
+            }
+            
+            // عرض التغذية الراجعة
+            showManagerFeedback(selectedSolution, isCorrect);
+            
+            // تحديث الإحصائيات
+            updateManagerDecisionStats();
+            
+            // إظهار زر الموقف التالي إذا لم تنته اللعبة
+            if (state.scenariosSolved < 10) {
+                document.getElementById('md-next-scenario-btn').classList.remove('hidden');
+            } else {
+                showManagerGameComplete();
+            }
+        }
+
+        function showManagerFeedback(solution, isCorrect) {
+            const bgColor = isCorrect ? 'bg-green-100 border-green-300' : 'bg-red-100 border-red-300';
+            const textColor = isCorrect ? 'text-green-800' : 'text-red-800';
+            const icon = isCorrect ? '🎉' : '💡';
+            
+            const feedbackContent = document.getElementById('md-feedback-content');
+            feedbackContent.innerHTML = `
+                <div class="text-4xl mb-4">${icon}</div>
+                <div class="text-xl font-bold mb-4">
+                    ${isCorrect ? 'إجابة ممتازة!' : 'تعلم من هذا القرار'}
+                </div>
+                <div class="text-lg mb-4">
+                    حصلت على <span class="font-bold">${solution.points}</span> نقطة
+                </div>
+                <div class="bg-white bg-opacity-50 rounded-xl p-4 text-base leading-relaxed">
+                    ${solution.explanation}
+                </div>
+            `;
+            
+            feedbackContent.className = `rounded-2xl p-6 text-center border-2 ${bgColor} ${textColor}`;
+            document.getElementById('md-feedback-container').classList.remove('hidden');
+        }
+
+        function showManagerGameComplete() {
+            const state = gameStates.managerDecision;
+            const successRate = Math.round((state.correctAnswers / state.scenariosSolved) * 100);
+            let message = '';
+            let bgColor = '';
+            
+            if (successRate >= 80) {
+                message = '🏆 مدير مشاريع ممتاز! لديك مهارات قيادية رائعة';
+                bgColor = 'bg-yellow-100 border-yellow-300 text-yellow-800';
+            } else if (successRate >= 60) {
+                message = '👍 أداء جيد! تحتاج لمزيد من التدريب على اتخاذ القرارات';
+                bgColor = 'bg-blue-100 border-blue-300 text-blue-800';
+            } else {
+                message = '📚 تحتاج لمزيد من التعلم في إدارة المشاريع';
+                bgColor = 'bg-orange-100 border-orange-300 text-orange-800';
+            }
+            
+            const feedbackContent = document.getElementById('md-feedback-content');
+            feedbackContent.innerHTML = `
+                <div class="text-6xl mb-6">🎯</div>
+                <div class="text-2xl font-bold mb-4">انتهت اللعبة!</div>
+                <div class="text-xl mb-6">${message}</div>
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-white bg-opacity-50 rounded-xl p-4">
+                        <div class="text-2xl font-bold">${state.totalScore}</div>
+                        <div class="text-sm">إجمالي النقاط</div>
+                    </div>
+                    <div class="bg-white bg-opacity-50 rounded-xl p-4">
+                        <div class="text-2xl font-bold">${successRate}%</div>
+                        <div class="text-sm">معدل النجاح</div>
+                    </div>
+                </div>
+                <div class="text-base">
+                    أجبت بشكل صحيح على ${state.correctAnswers} من ${state.scenariosSolved} مواقف
+                </div>
+            `;
+            
+            feedbackContent.className = `rounded-2xl p-6 text-center border-2 ${bgColor}`;
+            document.getElementById('md-feedback-container').classList.remove('hidden');
+            document.getElementById('md-solutions-container').classList.add('hidden');
+        }
+
+        function updateManagerDecisionStats() {
+            const state = gameStates.managerDecision;
+            document.getElementById('md-total-score').textContent = state.totalScore;
+            document.getElementById('md-scenarios-solved').textContent = state.scenariosSolved;
+            
+            const successRate = state.scenariosSolved > 0 ? Math.round((state.correctAnswers / state.scenariosSolved) * 100) : 0;
+            document.getElementById('md-success-rate').textContent = successRate + '%';
+            
+            // تحديد المستوى
+            let level = 'مبتدئ';
+            if (state.totalScore >= 120) level = 'خبير';
+            else if (state.totalScore >= 80) level = 'متقدم';
+            else if (state.totalScore >= 40) level = 'متوسط';
+            
+            document.getElementById('md-current-level').textContent = level;
+        }
+
+        function resetManagerDecisionGame() {
+            const state = gameStates.managerDecision;
+            state.currentScenarioIndex = 0;
+            state.totalScore = 0;
+            state.scenariosSolved = 0;
+            state.correctAnswers = 0;
+            state.gameStarted = false;
+            state.usedScenarios = [];
+            
+            document.getElementById('md-scenario-text').textContent = 'اضغط على "موقف جديد" لبدء اللعبة';
+            document.getElementById('md-solutions-container').classList.add('hidden');
+            document.getElementById('md-feedback-container').classList.add('hidden');
+            document.getElementById('md-next-scenario-btn').classList.add('hidden');
+            document.getElementById('md-scenario-counter').textContent = '1 / 10';
+            
+            updateManagerDecisionStats();
+        }
+
+        // دوال لعبة سؤال المفتاح
+        function initKeyQuestionGame() {
+            updateKeyQuestionStats();
+            
+            document.getElementById('kq-new-question-btn').onclick = showNewKeyQuestion;
+            document.getElementById('kq-reset-btn').onclick = resetKeyQuestionGame;
+        }
+
+        function showNewKeyQuestion() {
+            const state = gameStates.keyQuestion;
+            state.currentQuestionIndex = Math.floor(Math.random() * keyQuestions.length);
+            const question = keyQuestions[state.currentQuestionIndex];
+            
+            document.getElementById('kq-question-text').textContent = question.question;
+            document.getElementById('kq-question-category').textContent = question.category;
+            
+            const answerBtns = [
+                document.getElementById('kq-answer-1'),
+                document.getElementById('kq-answer-2'),
+                document.getElementById('kq-answer-3'),
+                document.getElementById('kq-answer-4')
+            ];
+            
+            answerBtns.forEach((btn, index) => {
+                btn.querySelector('.answer-text').textContent = question.answers[index];
+                btn.onclick = () => selectKeyAnswer(index);
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+            });
+            
+            document.getElementById('kq-answers-container').classList.remove('hidden');
+            document.getElementById('kq-feedback-container').classList.add('hidden');
+        }
+
+        function selectKeyAnswer(answerIndex) {
+            const state = gameStates.keyQuestion;
+            const question = keyQuestions[state.currentQuestionIndex];
+            const isCorrect = answerIndex === question.correct;
+            
+            const answerBtns = [
+                document.getElementById('kq-answer-1'),
+                document.getElementById('kq-answer-2'),
+                document.getElementById('kq-answer-3'),
+                document.getElementById('kq-answer-4')
+            ];
+            
+            answerBtns.forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add('opacity-50');
+            });
+            
+            if (isCorrect) {
+                state.correct++;
+                state.score += 10;
+            } else {
+                state.wrong++;
+            }
+            
+            showKeyQuestionFeedback(question, isCorrect);
+            updateKeyQuestionStats();
+        }
+
+        function showKeyQuestionFeedback(question, isCorrect) {
+            const bgColor = isCorrect ? 'bg-green-100 border-green-300' : 'bg-red-100 border-red-300';
+            const textColor = isCorrect ? 'text-green-800' : 'text-red-800';
+            const icon = isCorrect ? '✅' : '❌';
+            
+            const hintSection = !isCorrect ? `
+                <div class="hint-tooltip mb-4">
+                    <div class="bg-yellow-100 border border-yellow-300 rounded-xl p-3 cursor-help">
+                        <span class="text-yellow-800">💡 مرر الماوس هنا للحصول على تلميح</span>
+                    </div>
+                    <div class="hint-text">
+                        تلميح: ${getHintForQuestion(question)}
+                    </div>
+                </div>
+            ` : '';
+            
+            const feedbackContent = document.getElementById('kq-feedback-content');
+            feedbackContent.innerHTML = `
+                <div class="text-4xl mb-4 sparkle-effect">${icon}</div>
+                <div class="text-xl font-bold mb-4">
+                    ${isCorrect ? 'إجابة صحيحة!' : 'إجابة خاطئة'}
+                </div>
+                ${hintSection}
+                <div class="text-lg mb-4">
+                    الإجابة الصحيحة: <span class="font-bold">${question.answers[question.correct]}</span>
+                </div>
+                <div class="bg-white bg-opacity-50 rounded-xl p-4 text-base leading-relaxed">
+                    ${question.explanation}
+                </div>
+            `;
+            
+            feedbackContent.className = `rounded-2xl p-6 text-center border-2 ${bgColor} ${textColor}`;
+            document.getElementById('kq-feedback-container').classList.remove('hidden');
+        }
+
+        function updateKeyQuestionStats() {
+            const state = gameStates.keyQuestion;
+            document.getElementById('kq-score').textContent = state.score;
+            document.getElementById('kq-correct').textContent = state.correct;
+            document.getElementById('kq-wrong').textContent = state.wrong;
+        }
+
+        function resetKeyQuestionGame() {
+            const state = gameStates.keyQuestion;
+            state.currentQuestionIndex = 0;
+            state.score = 0;
+            state.correct = 0;
+            state.wrong = 0;
+            
+            document.getElementById('kq-question-text').textContent = 'اضغط على "سؤال جديد" لبدء اللعبة';
+            document.getElementById('kq-answers-container').classList.add('hidden');
+            document.getElementById('kq-feedback-container').classList.add('hidden');
+            
+            updateKeyQuestionStats();
+        }
+
+        // دوال لعبة الترتيب التفاعلية
+        function initInteractiveSortingGame() {
+            updateInteractiveSortingStats();
+            
+            document.getElementById('is-new-challenge-btn').onclick = showNewSortingChallenge;
+            document.getElementById('is-check-answer-btn').onclick = checkSortingAnswer;
+            document.getElementById('is-restart-sorting-btn').onclick = restartCurrentSorting;
+            document.getElementById('is-reset-btn').onclick = resetInteractiveSortingGame;
+        }
+
+        function showNewSortingChallenge() {
+            const state = gameStates.interactiveSorting;
+            state.currentChallengeIndex = Math.floor(Math.random() * sortingChallenges.length);
+            const challenge = sortingChallenges[state.currentChallengeIndex];
+            
+            document.getElementById('is-challenge-title').textContent = challenge.title;
+            document.getElementById('is-challenge-description').textContent = challenge.description;
+            
+            // خلط العناصر
+            state.currentItems = [...challenge.items].sort(() => Math.random() - 0.5);
+            state.sortedItems = [];
+            
+            displaySortingItems();
+            clearDropZone();
+            
+            document.getElementById('is-check-answer-btn').classList.add('hidden');
+            document.getElementById('is-restart-sorting-btn').classList.add('hidden');
+            document.getElementById('is-feedback-container').classList.add('hidden');
+        }
+
+        function displaySortingItems() {
+            const state = gameStates.interactiveSorting;
+            const itemsList = document.getElementById('is-items-list');
+            itemsList.innerHTML = '';
+            
+            state.currentItems.forEach((item, index) => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'sortable-item bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-4 rounded-xl font-semibold shadow-lg cursor-move transform transition-all duration-300 hover:scale-105';
+                itemElement.innerHTML = `
+                    <div class="flex items-center justify-center">
+                        <span class="text-2xl mr-3">${item.icon}</span>
+                        <span class="text-lg">${item.text}</span>
+                    </div>
+                `;
+                itemElement.draggable = true;
+                itemElement.dataset.itemId = item.id;
+                
+                itemElement.addEventListener('dragstart', handleDragStart);
+                itemElement.addEventListener('dragend', handleDragEnd);
+                
+                // إضافة تأثيرات متنوعة لكل بطاقة
+                const effects = ['pulse-animation', 'sorting-effect', 'sparkle-effect'];
+                const randomEffect = effects[index % effects.length];
+                
+                itemElement.addEventListener('mouseenter', () => {
+                    itemElement.classList.add(randomEffect);
+                    itemElement.style.transform = 'scale(1.1) rotate(2deg)';
+                });
+                itemElement.addEventListener('mouseleave', () => {
+                    itemElement.classList.remove(randomEffect);
+                    itemElement.style.transform = 'scale(1) rotate(0deg)';
+                });
+                
+                itemsList.appendChild(itemElement);
+            });
+        }
+
+        function clearDropZone() {
+            const sortedItems = document.getElementById('is-sorted-items');
+            sortedItems.innerHTML = '';
+            
+            const dropZone = document.getElementById('is-drop-zone');
+            dropZone.addEventListener('dragover', handleDragOver);
+            dropZone.addEventListener('drop', handleDrop);
+        }
+
+        function handleDragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.dataset.itemId);
+            e.target.classList.add('dragging');
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            document.getElementById('is-drop-zone').classList.add('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const itemId = e.dataTransfer.getData('text/plain');
+            const draggedElement = document.querySelector(`[data-item-id="${itemId}"]`);
+            
+            if (draggedElement) {
+                const state = gameStates.interactiveSorting;
+                const item = state.currentItems.find(item => item.id == itemId);
+                
+                if (item) {
+                    // إضافة العنصر للمنطقة المرتبة
+                    const sortedItems = document.getElementById('is-sorted-items');
+                    const sortedElement = document.createElement('div');
+                    sortedElement.className = 'bg-gradient-to-r from-green-500 to-emerald-500 text-white p-3 rounded-lg font-semibold shadow-md mb-2 transform transition-all duration-300 bounce-in';
+                    sortedElement.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <span class="text-xl mr-2">${item.icon}</span>
+                                <span>${item.text}</span>
+                            </div>
+                            <span class="text-sm bg-white bg-opacity-20 px-2 py-1 rounded-full">${state.sortedItems.length + 1}</span>
+                        </div>
+                    `;
+                    sortedElement.dataset.itemId = item.id;
+                    sortedElement.dataset.itemOrder = item.order;
+                    
+                    // إضافة إمكانية إعادة الترتيب داخل المنطقة المرتبة
+                    sortedElement.addEventListener('click', () => {
+                        returnItemToList(item, sortedElement);
+                    });
+                    
+                    sortedItems.appendChild(sortedElement);
+                    
+                    // إزالة العنصر من القائمة الأصلية
+                    draggedElement.remove();
+                    
+                    // تحديث حالة اللعبة
+                    state.sortedItems.push(item);
+                    state.currentItems = state.currentItems.filter(i => i.id != itemId);
+                    
+                    // إظهار زر التحقق إذا تم ترتيب جميع العناصر
+                    if (state.currentItems.length === 0) {
+                        document.getElementById('is-check-answer-btn').classList.remove('hidden');
+                    }
+                }
+            }
+            
+            document.getElementById('is-drop-zone').classList.remove('drag-over');
+        }
+
+        function returnItemToList(item, sortedElement) {
+            const state = gameStates.interactiveSorting;
+            
+            // إزالة العنصر من المنطقة المرتبة
+            sortedElement.remove();
+            
+            // إضافة العنصر مرة أخرى للقائمة الأصلية
+            state.currentItems.push(item);
+            state.sortedItems = state.sortedItems.filter(i => i.id !== item.id);
+            
+            // إعادة عرض القائمة
+            displaySortingItems();
+            
+            // إخفاء زر التحقق
+            document.getElementById('is-check-answer-btn').classList.add('hidden');
+            document.getElementById('is-feedback-container').classList.add('hidden');
+            
+            // إعادة ترقيم العناصر المرتبة
+            updateSortedItemsNumbers();
+        }
+
+        function updateSortedItemsNumbers() {
+            const sortedElements = document.querySelectorAll('#is-sorted-items > div');
+            sortedElements.forEach((element, index) => {
+                const numberSpan = element.querySelector('.text-sm');
+                if (numberSpan) {
+                    numberSpan.textContent = index + 1;
+                }
+            });
+        }
+
+        function checkSortingAnswer() {
+            const state = gameStates.interactiveSorting;
+            const challenge = sortingChallenges[state.currentChallengeIndex];
+            
+            // التحقق من الترتيب وتلوين البطاقات
+            let isCorrect = true;
+            let correctCount = 0;
+            let incorrectItems = [];
+            const sortedElements = document.querySelectorAll('#is-sorted-items > div');
+            
+            sortedElements.forEach((element, index) => {
+                const itemId = parseInt(element.dataset.itemId);
+                const item = state.sortedItems[index];
+                
+                // إزالة الفئات السابقة
+                element.classList.remove('correct-card', 'incorrect-card');
+                
+                if (item.order === index + 1) {
+                    element.classList.add('correct-card');
+                    correctCount++;
+                    
+                    // إضافة تأثير النجاح
+                    setTimeout(() => {
+                        element.style.transform = 'scale(1.1)';
+                        setTimeout(() => {
+                            element.style.transform = 'scale(1)';
+                        }, 300);
+                    }, index * 100);
+                } else {
+                    element.classList.add('incorrect-card');
+                    incorrectItems.push({
+                        item: item,
+                        currentPosition: index + 1,
+                        correctPosition: item.order
+                    });
+                    isCorrect = false;
+                    
+                    // إضافة تأثير الخطأ
+                    setTimeout(() => {
+                        element.style.transform = 'translateX(-10px)';
+                        setTimeout(() => {
+                            element.style.transform = 'translateX(10px)';
+                            setTimeout(() => {
+                                element.style.transform = 'translateX(0)';
+                            }, 150);
+                        }, 150);
+                    }, index * 100);
+                }
+            });
+            
+            if (isCorrect) {
+                state.score += 20;
+                state.completed++;
+                showSortingFeedback(true, "ممتاز! الترتيب صحيح تماماً 🎉", correctCount, incorrectItems);
+                document.getElementById('is-restart-sorting-btn').classList.add('hidden');
+                
+                // تأثير الاحتفال
+                createCelebrationEffect();
+            } else {
+                showSortingFeedback(false, "الترتيب غير صحيح. راجع التلميحات أدناه", correctCount, incorrectItems);
+                document.getElementById('is-restart-sorting-btn').classList.remove('hidden');
+            }
+            
+            updateInteractiveSortingStats();
+        }
+
+        function createCelebrationEffect() {
+            // إضافة تأثير الاحتفال
+            const dropZone = document.getElementById('is-drop-zone');
+            dropZone.style.background = 'linear-gradient(45deg, #10b981, #059669, #34d399, #6ee7b7)';
+            dropZone.style.backgroundSize = '400% 400%';
+            dropZone.style.animation = 'gradient 2s ease infinite';
+            
+            setTimeout(() => {
+                dropZone.style.background = '';
+                dropZone.style.animation = '';
+            }, 3000);
+        }
+
+        function showSortingFeedback(isCorrect, message, correctCount, incorrectItems) {
+            const bgColor = isCorrect ? 'bg-green-100 border-green-300' : 'bg-red-100 border-red-300';
+            const textColor = isCorrect ? 'text-green-800' : 'text-red-800';
+            const icon = isCorrect ? '🎉' : '💡';
+            
+            let hintsSection = '';
+            if (!isCorrect && incorrectItems.length > 0) {
+                hintsSection = `
+                    <div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+                        <h4 class="text-lg font-bold text-yellow-800 mb-3">💡 تلميحات للبطاقات الخاطئة:</h4>
+                        <div class="space-y-3">
+                            ${incorrectItems.map(item => `
+                                <div class="bg-white p-3 rounded-lg border border-yellow-300">
+                                    <div class="flex items-center mb-2">
+                                        <span class="text-xl mr-2">${item.item.icon}</span>
+                                        <span class="font-semibold text-yellow-800">${item.item.text}</span>
+                                    </div>
+                                    <div class="text-sm text-yellow-700 mb-2">
+                                        <strong>موضعها الحالي:</strong> ${item.currentPosition} | 
+                                        <strong>الموضع الصحيح:</strong> ${item.correctPosition}
+                                    </div>
+                                    <div class="text-sm text-yellow-600 bg-yellow-100 p-2 rounded">
+                                        <strong>تلميح:</strong> ${item.item.hint}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            const statsSection = `
+                <div class="mt-4 grid grid-cols-2 gap-4">
+                    <div class="bg-white bg-opacity-50 rounded-xl p-3">
+                        <div class="text-2xl font-bold text-green-600">${correctCount}</div>
+                        <div class="text-sm">بطاقات صحيحة</div>
+                    </div>
+                    <div class="bg-white bg-opacity-50 rounded-xl p-3">
+                        <div class="text-2xl font-bold text-red-600">${incorrectItems.length}</div>
+                        <div class="text-sm">بطاقات خاطئة</div>
+                    </div>
+                </div>
+            `;
+            
+            const feedbackContent = document.getElementById('is-feedback-content');
+            feedbackContent.innerHTML = `
+                <div class="text-4xl mb-4 sparkle-effect">${icon}</div>
+                <div class="text-xl font-bold mb-4">${message}</div>
+                ${isCorrect ? '<div class="text-lg mb-4">🏆 حصلت على 20 نقطة!</div>' : ''}
+                ${statsSection}
+                ${hintsSection}
+                ${!isCorrect ? '<div class="mt-4 text-sm text-gray-600">💡 اضغط على البطاقات الخاطئة لإعادة ترتيبها</div>' : ''}
+            `;
+            
+            feedbackContent.className = `rounded-2xl p-6 text-center border-2 ${bgColor} ${textColor}`;
+            document.getElementById('is-feedback-container').classList.remove('hidden');
+        }
+
+        function restartCurrentSorting() {
+            const state = gameStates.interactiveSorting;
+            const challenge = sortingChallenges[state.currentChallengeIndex];
+            
+            // إعادة خلط العناصر
+            state.currentItems = [...challenge.items].sort(() => Math.random() - 0.5);
+            state.sortedItems = [];
+            
+            // إزالة جميع التأثيرات السابقة
+            const sortedElements = document.querySelectorAll('#is-sorted-items > div');
+            sortedElements.forEach(element => {
+                element.classList.remove('correct-card', 'incorrect-card', 'success-bounce', 'error-shake');
+                element.style.transform = '';
+            });
+            
+            displaySortingItems();
+            clearDropZone();
+            
+            document.getElementById('is-check-answer-btn').classList.add('hidden');
+            document.getElementById('is-restart-sorting-btn').classList.add('hidden');
+            document.getElementById('is-feedback-container').classList.add('hidden');
+            
+            // إضافة تأثير إعادة التشغيل
+            const dropZone = document.getElementById('is-drop-zone');
+            dropZone.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                dropZone.style.transform = 'scale(1)';
+            }, 200);
+        }
+
+        function updateInteractiveSortingStats() {
+            const state = gameStates.interactiveSorting;
+            document.getElementById('is-score').textContent = state.score;
+            document.getElementById('is-completed').textContent = state.completed;
+        }
+
+        function resetInteractiveSortingGame() {
+            const state = gameStates.interactiveSorting;
+            state.currentChallengeIndex = 0;
+            state.score = 0;
+            state.completed = 0;
+            state.currentItems = [];
+            state.sortedItems = [];
+            
+            document.getElementById('is-challenge-title').textContent = 'اضغط على "تحدي جديد" لبدء اللعبة';
+            document.getElementById('is-challenge-description').textContent = 'رتب العناصر حسب التسلسل الصحيح';
+            document.getElementById('is-items-list').innerHTML = '';
+            document.getElementById('is-sorted-items').innerHTML = '';
+            document.getElementById('is-check-answer-btn').classList.add('hidden');
+            document.getElementById('is-restart-sorting-btn').classList.add('hidden');
+            document.getElementById('is-feedback-container').classList.add('hidden');
+            
+            updateInteractiveSortingStats();
+        }
+
+        // دوال لعبة مثلث المشروع
+        function initProjectTriangleGame() {
+            // إعادة تعيين حالة اللعبة
+            const state = gameStates.projectTriangle;
+            state.numberOfTeams = 1;
+            state.currentTeam = 0;
+            state.currentQuestionIndex = 0;
+            state.teams = [];
+            state.usedQuestions = [];
+            state.gameStarted = false;
+            state.winner = null;
+            
+            // إظهار اختيار الفرق
+            document.getElementById('pt-team-selection').classList.remove('hidden');
+            document.getElementById('pt-game-area').classList.add('hidden');
+            document.getElementById('pt-game-complete').classList.add('hidden');
+            
+            // ربط الأحداث
+            document.getElementById('pt-next-question-btn').onclick = showNextProjectTriangleQuestion;
+            document.getElementById('pt-reset-game-btn').onclick = resetProjectTriangleGame;
+        }
+
+        function startProjectTriangleGame(numberOfTeams) {
+            const state = gameStates.projectTriangle;
+            state.numberOfTeams = numberOfTeams;
+            state.gameStarted = true;
+            
+            // إنشاء الفرق
+            state.teams = [];
+            const teamColors = [
+                { bg: 'from-blue-500 to-cyan-500', name: 'الفريق الأزرق' },
+                { bg: 'from-green-500 to-emerald-500', name: 'الفريق الأخضر' },
+                { bg: 'from-purple-500 to-pink-500', name: 'الفريق البنفسجي' }
+            ];
+            
+            for (let i = 0; i < numberOfTeams; i++) {
+                state.teams.push({
+                    id: i,
+                    name: teamColors[i].name,
+                    color: teamColors[i].bg,
+                    trianglePieces: {
+                        scope: false,
+                        time: false,
+                        cost: false
+                    },
+                    score: 0,
+                    correctAnswers: 0
+                });
+            }
+            
+            // إخفاء اختيار الفرق وإظهار منطقة اللعبة
+            document.getElementById('pt-team-selection').classList.add('hidden');
+            document.getElementById('pt-game-area').classList.remove('hidden');
+            
+            // عرض الفرق
+            displayProjectTriangleTeams();
+            
+            // بدء أول سؤال
+            showNextProjectTriangleQuestion();
+        }
+
+        function displayProjectTriangleTeams() {
+            const state = gameStates.projectTriangle;
+            const container = document.getElementById('pt-teams-container');
+            
+            // تحديد عدد الأعمدة حسب عدد الفرق
+            const gridCols = state.numberOfTeams === 1 ? 'grid-cols-1' : 
+                           state.numberOfTeams === 2 ? 'grid-cols-1 md:grid-cols-2' : 
+                           'grid-cols-1 md:grid-cols-3';
+            container.className = `grid gap-6 mb-8 ${gridCols}`;
+            
+            container.innerHTML = '';
+            
+            state.teams.forEach((team, index) => {
+                const teamElement = document.createElement('div');
+                teamElement.className = `bg-white rounded-2xl shadow-lg p-6 border-2 ${state.currentTeam === index ? 'border-indigo-500 ring-2 ring-indigo-200' : 'border-gray-200'}`;
+                
+                teamElement.innerHTML = `
+                    <div class="text-center mb-6">
+                        <div class="bg-gradient-to-r ${team.color} text-white px-4 py-2 rounded-full font-bold text-lg mb-4">
+                            ${team.name}
+                        </div>
+                        <div class="text-sm text-gray-600 mb-2">النقاط: <span class="font-bold text-indigo-600">${team.score}</span></div>
+                        <div class="text-sm text-gray-600">الإجابات الصحيحة: <span class="font-bold text-green-600">${team.correctAnswers}</span></div>
+                    </div>
+                    
+                    <!-- مثلث المشروع -->
+                    <div class="relative mx-auto" style="width: 200px; height: 180px;">
+                        <!-- خلفية المثلث -->
+                        <svg width="200" height="180" viewBox="0 0 200 180" class="absolute inset-0">
+                            <polygon points="100,20 20,160 180,160" 
+                                     fill="none" 
+                                     stroke="#e5e7eb" 
+                                     stroke-width="3" 
+                                     stroke-dasharray="5,5"/>
+                        </svg>
+                        
+                        <!-- قطع المثلث -->
+                        <svg width="200" height="180" viewBox="0 0 200 180" class="absolute inset-0">
+                            <!-- النطاق (الضلع العلوي) -->
+                            <line x1="100" y1="20" x2="20" y2="160" 
+                                  stroke="${team.trianglePieces.scope ? '#10b981' : 'transparent'}" 
+                                  stroke-width="6" 
+                                  class="transition-all duration-500 ${team.trianglePieces.scope ? 'opacity-100' : 'opacity-0'}"/>
+                            
+                            <!-- الوقت (الضلع الأيمن) -->
+                            <line x1="100" y1="20" x2="180" y2="160" 
+                                  stroke="${team.trianglePieces.time ? '#3b82f6' : 'transparent'}" 
+                                  stroke-width="6" 
+                                  class="transition-all duration-500 ${team.trianglePieces.time ? 'opacity-100' : 'opacity-0'}"/>
+                            
+                            <!-- التكلفة (الضلع السفلي) -->
+                            <line x1="20" y1="160" x2="180" y2="160" 
+                                  stroke="${team.trianglePieces.cost ? '#f59e0b' : 'transparent'}" 
+                                  stroke-width="6" 
+                                  class="transition-all duration-500 ${team.trianglePieces.cost ? 'opacity-100' : 'opacity-0'}"/>
+                        </svg>
+                        
+                        <!-- تسميات العناصر -->
+                        <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-4">
+                            <div class="bg-green-500 text-white px-2 py-1 rounded text-xs font-bold ${team.trianglePieces.scope ? 'opacity-100' : 'opacity-30'}">
+                                النطاق
+                            </div>
+                        </div>
+                        <div class="absolute top-16 right-0 transform translate-x-4">
+                            <div class="bg-blue-500 text-white px-2 py-1 rounded text-xs font-bold ${team.trianglePieces.time ? 'opacity-100' : 'opacity-30'}">
+                                الوقت
+                            </div>
+                        </div>
+                        <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-4">
+                            <div class="bg-yellow-500 text-white px-2 py-1 rounded text-xs font-bold ${team.trianglePieces.cost ? 'opacity-100' : 'opacity-30'}">
+                                التكلفة
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- مؤشر التقدم -->
+                    <div class="mt-6">
+                        <div class="text-center text-sm text-gray-600 mb-2">التقدم</div>
+                        <div class="bg-gray-200 rounded-full h-3">
+                            <div class="bg-gradient-to-r ${team.color} h-3 rounded-full transition-all duration-500" 
+                                 style="width: ${(Object.values(team.trianglePieces).filter(Boolean).length / 3) * 100}%"></div>
+                        </div>
+                        <div class="text-center text-xs text-gray-500 mt-1">
+                            ${Object.values(team.trianglePieces).filter(Boolean).length} / 3 قطع
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(teamElement);
+            });
+        }
+
+        function showNextProjectTriangleQuestion() {
+            const state = gameStates.projectTriangle;
+            
+            // التحقق من وجود فائز
+            const winner = state.teams.find(team => 
+                team.trianglePieces.scope && team.trianglePieces.time && team.trianglePieces.cost
+            );
+            
+            if (winner) {
+                showProjectTriangleGameComplete(winner);
+                return;
+            }
+            
+            // اختيار سؤال جديد
+            if (state.usedQuestions.length === projectTriangleQuestions.length) {
+                state.usedQuestions = [];
+            }
+            
+            let availableQuestions = projectTriangleQuestions.filter((_, index) => 
+                !state.usedQuestions.includes(index)
+            );
+            
+            state.currentQuestionIndex = projectTriangleQuestions.indexOf(
+                availableQuestions[Math.floor(Math.random() * availableQuestions.length)]
+            );
+            state.usedQuestions.push(state.currentQuestionIndex);
+            
+            const question = projectTriangleQuestions[state.currentQuestionIndex];
+            
+            // عرض السؤال
+            document.getElementById('pt-current-team').textContent = `دور ${state.teams[state.currentTeam].name}`;
+            document.getElementById('pt-question-text').textContent = question.question;
+            document.getElementById('pt-question-category').textContent = question.category;
+            
+            // عرض الخيارات
+            const answerBtns = [
+                document.getElementById('pt-answer-1'),
+                document.getElementById('pt-answer-2'),
+                document.getElementById('pt-answer-3'),
+                document.getElementById('pt-answer-4')
+            ];
+            
+            answerBtns.forEach((btn, index) => {
+                btn.querySelector('.answer-text').textContent = question.answers[index];
+                btn.onclick = () => selectProjectTriangleAnswer(index);
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+            });
+            
+            // إخفاء التغذية الراجعة وزر السؤال التالي
+            document.getElementById('pt-feedback-container').classList.add('hidden');
+            document.getElementById('pt-next-question-btn').classList.add('hidden');
+            
+            // تحديث عرض الفرق
+            displayProjectTriangleTeams();
+        }
+
+        function selectProjectTriangleAnswer(answerIndex) {
+            const state = gameStates.projectTriangle;
+            const question = projectTriangleQuestions[state.currentQuestionIndex];
+            const currentTeam = state.teams[state.currentTeam];
+            const isCorrect = answerIndex === question.correct;
+            
+            // تعطيل جميع الأزرار
+            const answerBtns = [
+                document.getElementById('pt-answer-1'),
+                document.getElementById('pt-answer-2'),
+                document.getElementById('pt-answer-3'),
+                document.getElementById('pt-answer-4')
+            ];
+            
+            answerBtns.forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add('opacity-50');
+            });
+            
+            if (isCorrect) {
+                // إضافة قطعة المثلث
+                currentTeam.trianglePieces[question.trianglePiece] = true;
+                currentTeam.score += 10;
+                currentTeam.correctAnswers++;
+                
+                // تأثير النجاح
+                createTrianglePieceEffect(state.currentTeam, question.trianglePiece);
+            }
+            
+            // عرض التغذية الراجعة
+            showProjectTriangleFeedback(question, isCorrect, currentTeam);
+            
+            // الانتقال للفريق التالي
+            state.currentTeam = (state.currentTeam + 1) % state.numberOfTeams;
+            
+            // إظهار زر السؤال التالي
+            document.getElementById('pt-next-question-btn').classList.remove('hidden');
+        }
+
+        function createTrianglePieceEffect(teamIndex, piece) {
+            // تأثير بصري عند الحصول على قطعة جديدة
+            const teamElement = document.getElementById('pt-teams-container').children[teamIndex];
+            teamElement.style.transform = 'scale(1.05)';
+            teamElement.style.boxShadow = '0 0 30px rgba(99, 102, 241, 0.5)';
+            
+            setTimeout(() => {
+                teamElement.style.transform = 'scale(1)';
+                teamElement.style.boxShadow = '';
+            }, 600);
+        }
+
+        function showProjectTriangleFeedback(question, isCorrect, team) {
+            const bgColor = isCorrect ? 'bg-green-100 border-green-300' : 'bg-red-100 border-red-300';
+            const textColor = isCorrect ? 'text-green-800' : 'text-red-800';
+            const icon = isCorrect ? '🎉' : '💡';
+            
+            const pieceInfo = isCorrect ? `
+                <div class="bg-white bg-opacity-50 rounded-xl p-4 mb-4">
+                    <div class="text-lg font-bold mb-2">🔺 حصل ${team.name} على قطعة جديدة!</div>
+                    <div class="text-base">
+                        قطعة: <span class="font-bold">${getPieceNameInArabic(question.trianglePiece)}</span>
+                    </div>
+                </div>
+            ` : '';
+            
+            const feedbackContent = document.getElementById('pt-feedback-content');
+            feedbackContent.innerHTML = `
+                <div class="text-4xl mb-4 sparkle-effect">${icon}</div>
+                <div class="text-xl font-bold mb-4">
+                    ${isCorrect ? 'إجابة صحيحة!' : 'إجابة خاطئة'}
+                </div>
+                ${pieceInfo}
+                <div class="text-lg mb-4">
+                    الإجابة الصحيحة: <span class="font-bold">${question.answers[question.correct]}</span>
+                </div>
+                <div class="bg-white bg-opacity-50 rounded-xl p-4 text-base leading-relaxed">
+                    ${question.explanation}
+                </div>
+            `;
+            
+            feedbackContent.className = `rounded-2xl p-6 text-center border-2 ${bgColor} ${textColor}`;
+            document.getElementById('pt-feedback-container').classList.remove('hidden');
+        }
+
+        function getPieceNameInArabic(piece) {
+            const names = {
+                'scope': 'النطاق',
+                'time': 'الوقت',
+                'cost': 'التكلفة'
+            };
+            return names[piece] || piece;
+        }
+
+        function showProjectTriangleGameComplete(winner) {
+            const state = gameStates.projectTriangle;
+            state.winner = winner;
+            
+            // إخفاء منطقة اللعبة وإظهار النتائج
+            document.getElementById('pt-game-area').classList.add('hidden');
+            document.getElementById('pt-game-complete').classList.remove('hidden');
+            
+            // إعلان الفائز
+            document.getElementById('pt-winner-announcement').innerHTML = `
+                🏆 ${winner.name} هو الفائز! 🏆
+                <div class="text-lg mt-2">أكمل مثلث المشروع بنجاح!</div>
+            `;
+            
+            // عرض النتائج النهائية
+            const resultsContainer = document.getElementById('pt-final-results');
+            let resultsHTML = '<div class="grid gap-4">';
+            
+            // ترتيب الفرق حسب النقاط
+            const sortedTeams = [...state.teams].sort((a, b) => {
+                const aCompleted = Object.values(a.trianglePieces).filter(Boolean).length;
+                const bCompleted = Object.values(b.trianglePieces).filter(Boolean).length;
+                if (aCompleted !== bCompleted) return bCompleted - aCompleted;
+                return b.score - a.score;
+            });
+            
+            sortedTeams.forEach((team, index) => {
+                const completedPieces = Object.values(team.trianglePieces).filter(Boolean).length;
+                const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '🏅';
+                
+                resultsHTML += `
+                    <div class="bg-white rounded-xl p-4 border-2 ${team === winner ? 'border-yellow-400 bg-yellow-50' : 'border-gray-200'}">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <span class="text-2xl mr-3">${medal}</span>
+                                <div>
+                                    <div class="font-bold text-lg">${team.name}</div>
+                                    <div class="text-sm text-gray-600">
+                                        ${completedPieces}/3 قطع مكتملة | ${team.score} نقطة
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-gray-600">قطع المثلث:</div>
+                                <div class="flex gap-1 mt-1">
+                                    <span class="${team.trianglePieces.scope ? 'text-green-500' : 'text-gray-300'}">🔺</span>
+                                    <span class="${team.trianglePieces.time ? 'text-blue-500' : 'text-gray-300'}">🔺</span>
+                                    <span class="${team.trianglePieces.cost ? 'text-yellow-500' : 'text-gray-300'}">🔺</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            resultsHTML += '</div>';
+            resultsContainer.innerHTML = resultsHTML;
+            
+            // تأثير الاحتفال
+            createCelebrationEffect();
+        }
+
+        function resetProjectTriangleGame() {
+            initProjectTriangleGame();
+        }
+
+        // دوال لعبة من أنا
+        function initWhoAmIGame() {
+            updateWhoAmIStats();
+            
+            document.getElementById('wai-new-puzzle-btn').onclick = showNewWhoAmIPuzzle;
+            document.getElementById('wai-reset-btn').onclick = resetWhoAmIGame;
+        }
+
+        function showNewWhoAmIPuzzle() {
+            const state = gameStates.whoAmI;
+            state.currentPuzzleIndex = Math.floor(Math.random() * whoAmIPuzzles.length);
+            const puzzle = whoAmIPuzzles[state.currentPuzzleIndex];
+            
+            document.getElementById('wai-clue-text').textContent = puzzle.clue;
+            document.getElementById('wai-category').textContent = puzzle.category;
+            
+            const optionBtns = [
+                document.getElementById('wai-option-1'),
+                document.getElementById('wai-option-2'),
+                document.getElementById('wai-option-3'),
+                document.getElementById('wai-option-4')
+            ];
+            
+            optionBtns.forEach((btn, index) => {
+                btn.querySelector('.option-text').textContent = puzzle.options[index];
+                btn.onclick = () => selectWhoAmIOption(index);
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+            });
+            
+            document.getElementById('wai-options-container').classList.remove('hidden');
+            document.getElementById('wai-feedback-container').classList.add('hidden');
+        }
+
+        function selectWhoAmIOption(optionIndex) {
+            const state = gameStates.whoAmI;
+            const puzzle = whoAmIPuzzles[state.currentPuzzleIndex];
+            const isCorrect = optionIndex === puzzle.correct;
+            
+            const optionBtns = [
+                document.getElementById('wai-option-1'),
+                document.getElementById('wai-option-2'),
+                document.getElementById('wai-option-3'),
+                document.getElementById('wai-option-4')
+            ];
+            
+            optionBtns.forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add('opacity-50');
+            });
+            
+            if (isCorrect) {
+                state.correct++;
+                state.score += 15;
+            } else {
+                state.wrong++;
+            }
+            
+            showWhoAmIFeedback(puzzle, isCorrect);
+            updateWhoAmIStats();
+        }
+
+        function showWhoAmIFeedback(puzzle, isCorrect) {
+            const bgColor = isCorrect ? 'bg-green-100 border-green-300' : 'bg-red-100 border-red-300';
+            const textColor = isCorrect ? 'text-green-800' : 'text-red-800';
+            const icon = isCorrect ? '🎯' : '❌';
+            
+            const hintSection = !isCorrect ? `
+                <div class="hint-tooltip mb-4">
+                    <div class="bg-yellow-100 border border-yellow-300 rounded-xl p-3 cursor-help">
+                        <span class="text-yellow-800">💡 مرر الماوس هنا للحصول على تلميح</span>
+                    </div>
+                    <div class="hint-text">
+                        تلميح: ${getHintForPuzzle(puzzle)}
+                    </div>
+                </div>
+            ` : '';
+            
+            const feedbackContent = document.getElementById('wai-feedback-content');
+            feedbackContent.innerHTML = `
+                <div class="text-4xl mb-4 sparkle-effect">${icon}</div>
+                <div class="text-xl font-bold mb-4">
+                    ${isCorrect ? 'إجابة صحيحة!' : 'إجابة خاطئة'}
+                </div>
+                ${hintSection}
+                <div class="text-lg mb-4">
+                    الإجابة الصحيحة: <span class="font-bold">${puzzle.options[puzzle.correct]}</span>
+                </div>
+                <div class="bg-white bg-opacity-50 rounded-xl p-4 text-base leading-relaxed">
+                    ${puzzle.explanation}
+                </div>
+            `;
+            
+            feedbackContent.className = `rounded-2xl p-6 text-center border-2 ${bgColor} ${textColor}`;
+            document.getElementById('wai-feedback-container').classList.remove('hidden');
+        }
+
+        function updateWhoAmIStats() {
+            const state = gameStates.whoAmI;
+            document.getElementById('wai-score').textContent = state.score;
+            document.getElementById('wai-correct').textContent = state.correct;
+            document.getElementById('wai-wrong').textContent = state.wrong;
+        }
+
+        function resetWhoAmIGame() {
+            const state = gameStates.whoAmI;
+            state.currentPuzzleIndex = 0;
+            state.score = 0;
+            state.correct = 0;
+            state.wrong = 0;
+            
+            document.getElementById('wai-clue-text').textContent = 'اضغط على "لغز جديد" لبدء اللعبة';
+            document.getElementById('wai-options-container').classList.add('hidden');
+            document.getElementById('wai-feedback-container').classList.add('hidden');
+            
+            updateWhoAmIStats();
+        }
+
+        // دوال التلميحات
+        function getHintForQuestion(question) {
+            const hints = {
+                "ما هي طريقة أيزنهاور؟": "فكر في رئيس أمريكي مشهور وطريقة تنظيم المهام حسب الأهمية والعجلة",
+                "ما الفرق بين الموارد القابلة للتخزين وغير القابلة للتخزين؟": "فكر في الفرق بين المواد الملموسة والخدمات أو الوقت",
+                "ما عناصر تخطيط المشروع؟": "المشروع يحتاج تخطيط شامل يغطي جميع جوانبه من البداية للنهاية",
+                "ما هو الهدف من تحديد النطاق في المشروع؟": "النطاق يحدد حدود المشروع - ما سيتم عمله وما لن يتم عمله",
+                "ما هي أهمية الجدول الزمني في المشروع؟": "الجدول الزمني ينظم تسلسل الأعمال ويساعد في المتابعة والتحكم"
+            };
+            return hints[question.question] || "راجع المفاهيم الأساسية في إدارة المشاريع";
+        }
+
+        function getHintForPuzzle(puzzle) {
+            const hints = {
+                "أحدد النطاق والوقت والتكلفة في المشروع": "فكر في شكل هندسي له ثلاثة أضلاع متساوية",
+                "أجمع الفريق وأضع الخطة وأتابع التنفيذ": "هذا الشخص مسؤول عن قيادة وإدارة المشروع من البداية للنهاية",
+                "أحدد الأولويات باستخدام طريقتين: ABC وأيزنهاور": "هذا النشاط يركز على ترتيب المهام حسب الأهمية والوقت",
+                "أنا مخطط بياني يُظهر المهام والأنشطة مقابل الزمن": "سُمي على اسم مهندس أمريكي، ويُستخدم لعرض الجدول الزمني بصرياً",
+                "أنا منهجية لإدارة المشاريع تركز على التحسين المستمر": "منهجية حديثة تعمل بدورات قصيرة وتتكيف مع التغييرات",
+                "أنا وثيقة تحدد أهداف المشروع ونطاقه": "هذه الوثيقة تُعطي الإذن الرسمي لبدء المشروع",
+                "أنا تقنية لتحديد المسار الأطول في شبكة المشروع": "هذا المسار يحدد أقل وقت ممكن لإنجاز المشروع",
+                "أنا هيكل يُقسم المشروع إلى أجزاء أصغر": "هيكل هرمي يُقسم العمل الكبير إلى مهام صغيرة قابلة للإدارة",
+                "أنا عملية تحديد وتحليل الأحداث المحتملة": "هذه العملية تتعامل مع الأحداث التي قد تؤثر على المشروع سلباً أو إيجاباً",
+                "أنا مجموعة من الأشخاص المهتمين بالمشروع": "هؤلاء الأشخاص لهم مصلحة في المشروع أو يتأثرون بنتائجه"
+            };
+            return hints[puzzle.clue] || "فكر في المصطلحات الأساسية في إدارة المشاريع";
+        }
+
+        // تهيئة الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            // إظهار قائمة الألعاب بشكل افتراضي
+            showGameSelection();
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9abbac612589cdf8',t:'MTc2NTM1ODUwMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
