@@ -1,0 +1,727 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>بطاقات أمان الحاسوب التعليمية</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+        body {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100%;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .main-title {
+            text-align: center;
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.2);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            margin-left: 15px;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            margin: 0;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 12px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-weight: bold;
+        }
+
+        .comparison-table td {
+            background: #f8f9ff;
+        }
+
+        .user-types, .permission-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .user-type, .permission-type {
+            background: linear-gradient(135deg, #f8f9ff, #e8ecff);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+            transition: transform 0.2s ease;
+        }
+
+        .user-type:hover, .permission-type:hover {
+            transform: scale(1.02);
+        }
+
+        .type-icon {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        .type-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .type-description {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .activity-section {
+            background: linear-gradient(135deg, #ffeaa7, #fab1a0);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .activity-title {
+            text-align: center;
+            font-size: 1.8rem;
+            color: #2d3436;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .scenario {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .scenario-title {
+            font-weight: bold;
+            color: #2d3436;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .scenario-description {
+            color: #636e72;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .option-btn {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .option-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(116, 185, 255, 0.4);
+        }
+
+        .option-btn.correct {
+            background: linear-gradient(135deg, #00b894, #00a085);
+        }
+
+        .option-btn.incorrect {
+            background: linear-gradient(135deg, #e17055, #d63031);
+        }
+
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            display: none;
+        }
+
+        .result.correct {
+            background: linear-gradient(135deg, #d1f2eb, #a3e4d7);
+            color: #00695c;
+            border: 2px solid #00b894;
+        }
+
+        .result.incorrect {
+            background: linear-gradient(135deg, #fadbd8, #f1948a);
+            color: #c0392b;
+            border: 2px solid #e74c3c;
+        }
+
+        .score-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .score-title {
+            font-size: 1.5rem;
+            color: #2d3436;
+            margin-bottom: 10px;
+        }
+
+        .score-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .score-message {
+            color: #636e72;
+            font-size: 1.1rem;
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(162, 155, 254, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 2rem;
+            }
+            
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="container">
+   <h1 class="main-title" id="mainTitle">بطاقات أمان الحاسوب التعليمية</h1>
+   <div class="cards-grid"><!-- بطاقة جدار الحماية ومكافحة الفيروسات -->
+    <div class="card">
+     <div class="card-header"><span class="card-icon">🛡️</span>
+      <h2 class="card-title">جدار الحماية ومكافحة الفيروسات</h2>
+     </div>
+     <table class="comparison-table">
+      <thead>
+       <tr>
+        <th>المعيار</th>
+        <th>🧱 جدار الحماية (Firewall)</th>
+        <th>🦠 مكافحة الفيروسات (Antivirus)</th>
+       </tr>
+      </thead>
+      <tbody>
+       <tr>
+        <td><strong>الوظيفة</strong></td>
+        <td>مراقبة وتصفية حركة البيانات الواردة والصادرة</td>
+        <td>الكشف عن البرمجيات الخبيثة وإزالتها</td>
+       </tr>
+       <tr>
+        <td><strong>الهدف الأساسي</strong></td>
+        <td>منع الوصول غير المصرح به للشبكة</td>
+        <td>حماية النظام من الفيروسات والبرمجيات الضارة</td>
+       </tr>
+       <tr>
+        <td><strong>النوع</strong></td>
+        <td>برمجي أو عتادي (Hardware/Software)</td>
+        <td>برمجي فقط (Software)</td>
+       </tr>
+       <tr>
+        <td><strong>التوافق</strong></td>
+        <td>يعمل على مستوى الشبكة</td>
+        <td>يعمل على مستوى الملفات والتطبيقات</td>
+       </tr>
+      </tbody>
+     </table>
+     <div class="activity-section">
+      <div class="activity-title">
+       🎯 نشاط سريع: اختبار المعرفة
+      </div>
+      <div class="scenario">
+       <div class="scenario-title">
+        🚨 السيناريو:
+       </div>
+       <div class="scenario-description">
+        تم اكتشاف محاولة هجوم إلكتروني من عناوين IP مشبوهة تحاول الوصول إلى شبكة الشركة. ما الأداة المناسبة لمنع هذا النوع من الهجمات؟
+       </div>
+       <div class="options"><button class="option-btn" onclick="checkFirewallAnswer('firewall')">🧱 جدار الحماية</button> <button class="option-btn" onclick="checkFirewallAnswer('antivirus')">🦠 مكافحة الفيروسات</button>
+       </div>
+       <div id="firewallResult" class="result"></div>
+      </div>
+     </div>
+    </div><!-- بطاقة حسابات المستخدمين وأنواع الأذونات -->
+    <div class="card">
+     <div class="card-header"><span class="card-icon">👩🏻‍💻</span>
+      <h2 class="card-title">حسابات المستخدمين وأنواع الأذونات</h2>
+     </div>
+     <h3 style="color: #667eea; margin-bottom: 15px;">أنواع حسابات المستخدمين</h3>
+     <div class="user-types">
+      <div class="user-type">
+       <div class="type-icon">
+        👑
+       </div>
+       <div class="type-title">
+        المسؤول (Administrator)
+       </div>
+       <div class="type-description">
+        صلاحيات كاملة لإدارة النظام والمستخدمين
+       </div>
+      </div>
+      <div class="user-type">
+       <div class="type-icon">
+        ⚡
+       </div>
+       <div class="type-title">
+        مستخدم بامتيازات إدارية
+       </div>
+       <div class="type-description">
+        صلاحيات محدودة للمهام الإدارية
+       </div>
+      </div>
+      <div class="user-type">
+       <div class="type-icon">
+        🌐
+       </div>
+       <div class="type-title">
+        حساب Microsoft
+       </div>
+       <div class="type-description">
+        حساب متصل بخدمات Microsoft السحابية
+       </div>
+      </div>
+      <div class="user-type">
+       <div class="type-icon">
+        💻
+       </div>
+       <div class="type-title">
+        الحساب المحلي
+       </div>
+       <div class="type-description">
+        حساب محلي على الجهاز فقط
+       </div>
+      </div>
+     </div>
+     <h3 style="color: #667eea; margin: 25px 0 15px 0;">أنواع أذونات الملفات</h3>
+     <div class="permission-types">
+      <div class="permission-type">
+       <div class="type-icon">
+        🔓
+       </div>
+       <div class="type-title">
+        تحكم كامل
+       </div>
+       <div class="type-description">
+        جميع الصلاحيات
+       </div>
+      </div>
+      <div class="permission-type">
+       <div class="type-icon">
+        ✏️
+       </div>
+       <div class="type-title">
+        تعديل
+       </div>
+       <div class="type-description">
+        قراءة وكتابة
+       </div>
+      </div>
+      <div class="permission-type">
+       <div class="type-icon">
+        ▶️
+       </div>
+       <div class="type-title">
+        قراءة وتنفيذ
+       </div>
+       <div class="type-description">
+        تشغيل البرامج
+       </div>
+      </div>
+      <div class="permission-type">
+       <div class="type-icon">
+        👁️
+       </div>
+       <div class="type-title">
+        عرض
+       </div>
+       <div class="type-description">
+        عرض المحتوى
+       </div>
+      </div>
+      <div class="permission-type">
+       <div class="type-icon">
+        📖
+       </div>
+       <div class="type-title">
+        قراءة
+       </div>
+       <div class="type-description">
+        قراءة فقط
+       </div>
+      </div>
+     </div>
+     <div class="activity-section">
+      <div class="activity-title">
+       🎮 لعبة الأذونات
+      </div>
+      <p style="text-align: center; color: #2d3436; margin-bottom: 20px;">اختاري نوع الإذن المناسب لكل ملف في السيناريوهات المختلفة</p>
+      <div id="permissionScenarios"><!-- السيناريو الأول -->
+       <div class="scenario">
+        <div class="scenario-title">
+         📄 السيناريو الأول:
+        </div>
+        <div class="scenario-description">
+         موظفة في قسم المحاسبة تحتاج للاطلاع على تقرير مالي سري دون إمكانية تعديله أو نسخه.
+        </div>
+        <div class="options"><button class="option-btn" onclick="checkPermissionAnswer(1, 'read')">📖 قراءة</button> <button class="option-btn" onclick="checkPermissionAnswer(1, 'modify')">✏️ تعديل</button> <button class="option-btn" onclick="checkPermissionAnswer(1, 'full')">🔓 تحكم كامل</button>
+        </div>
+        <div id="permissionResult1" class="result"></div>
+       </div><!-- السيناريو الثاني -->
+       <div class="scenario">
+        <div class="scenario-title">
+         🎮 السيناريو الثاني:
+        </div>
+        <div class="scenario-description">
+         طالبة تحتاج لتشغيل برنامج تعليمي تفاعلي على الحاسوب المدرسي.
+        </div>
+        <div class="options"><button class="option-btn" onclick="checkPermissionAnswer(2, 'read')">📖 قراءة</button> <button class="option-btn" onclick="checkPermissionAnswer(2, 'execute')">▶️ قراءة وتنفيذ</button> <button class="option-btn" onclick="checkPermissionAnswer(2, 'view')">👁️ عرض</button>
+        </div>
+        <div id="permissionResult2" class="result"></div>
+       </div><!-- السيناريو الثالث -->
+       <div class="scenario">
+        <div class="scenario-title">
+         📝 السيناريو الثالث:
+        </div>
+        <div class="scenario-description">
+         فريق عمل يحتاج للتعاون في مجلد المشاريع الجماعية بإضافة وتعديل الملفات.
+        </div>
+        <div class="options"><button class="option-btn" onclick="checkPermissionAnswer(3, 'read')">📖 قراءة</button> <button class="option-btn" onclick="checkPermissionAnswer(3, 'modify')">✏️ تعديل</button> <button class="option-btn" onclick="checkPermissionAnswer(3, 'execute')">▶️ قراءة وتنفيذ</button>
+        </div>
+        <div id="permissionResult3" class="result"></div>
+       </div><!-- السيناريو الرابع -->
+       <div class="scenario">
+        <div class="scenario-title">
+         🔧 السيناريو الرابع:
+        </div>
+        <div class="scenario-description">
+         مدير النظام يحتاج لإدارة ملفات إعدادات النظام الحساسة وتعديل الصلاحيات.
+        </div>
+        <div class="options"><button class="option-btn" onclick="checkPermissionAnswer(4, 'modify')">✏️ تعديل</button> <button class="option-btn" onclick="checkPermissionAnswer(4, 'full')">🔓 تحكم كامل</button> <button class="option-btn" onclick="checkPermissionAnswer(4, 'execute')">▶️ قراءة وتنفيذ</button>
+        </div>
+        <div id="permissionResult4" class="result"></div>
+       </div><!-- السيناريو الخامس -->
+       <div class="scenario">
+        <div class="scenario-title">
+         📊 السيناريو الخامس:
+        </div>
+        <div class="scenario-description">
+         زائر يحتاج لمشاهدة عرض تقديمي في قاعة الاجتماعات دون إمكانية التعديل.
+        </div>
+        <div class="options"><button class="option-btn" onclick="checkPermissionAnswer(5, 'view')">👁️ عرض</button> <button class="option-btn" onclick="checkPermissionAnswer(5, 'read')">📖 قراءة</button> <button class="option-btn" onclick="checkPermissionAnswer(5, 'modify')">✏️ تعديل</button>
+        </div>
+        <div id="permissionResult5" class="result"></div>
+       </div>
+      </div>
+      <div id="permissionScore" class="score-section">
+       <div class="score-title">
+        🏆 النتيجة النهائية
+       </div>
+       <div class="score-value" id="scoreValue">
+        0/100
+       </div>
+       <div class="score-message" id="scoreMessage"></div><button class="reset-btn" onclick="resetPermissionGame()">🔄 إعادة اللعب</button>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+        // متغيرات اللعبة
+        let permissionScore = 0;
+        let answeredQuestions = 0;
+        const totalQuestions = 5;
+
+        // إعدادات SDK
+        const defaultConfig = {
+            main_title: "بطاقات أمان الحاسوب التعليمية"
+        };
+
+        // تهيئة SDK
+        if (window.elementSdk) {
+            window.elementSdk.init({
+                defaultConfig: defaultConfig,
+                onConfigChange: async (config) => {
+                    const titleElement = document.getElementById('mainTitle');
+                    if (titleElement) {
+                        titleElement.textContent = config.main_title || defaultConfig.main_title;
+                    }
+                },
+                mapToCapabilities: (config) => ({
+                    recolorables: [],
+                    borderables: [],
+                    fontEditable: undefined,
+                    fontSizeable: undefined
+                }),
+                mapToEditPanelValues: (config) => new Map([
+                    ["main_title", config.main_title || defaultConfig.main_title]
+                ])
+            });
+        }
+
+        // وظيفة فحص إجابة جدار الحماية
+        function checkFirewallAnswer(answer) {
+            const resultDiv = document.getElementById('firewallResult');
+            const buttons = document.querySelectorAll('.scenario .option-btn');
+            
+            buttons.forEach(btn => btn.disabled = true);
+            
+            if (answer === 'firewall') {
+                resultDiv.className = 'result correct';
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `
+                    <div style="font-size: 1.2rem; margin-bottom: 10px;">✅ إجابة صحيحة!</div>
+                    <div>جدار الحماية هو الأداة المناسبة لمنع الهجمات الخارجية ومراقبة حركة البيانات الواردة والصادرة من الشبكة. يعمل كحاجز أمني يفحص جميع الاتصالات ويمنع الوصول غير المصرح به.</div>
+                `;
+                buttons[0].classList.add('correct');
+            } else {
+                resultDiv.className = 'result incorrect';
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `
+                    <div style="font-size: 1.2rem; margin-bottom: 10px;">❌ إجابة خاطئة!</div>
+                    <div>مكافحة الفيروسات يركز على الكشف عن البرمجيات الخبيثة داخل النظام وإزالتها، بينما جدار الحماية يمنع الهجمات الخارجية ويراقب حركة البيانات على مستوى الشبكة.</div>
+                `;
+                buttons[1].classList.add('incorrect');
+                buttons[0].classList.add('correct');
+            }
+        }
+
+        // وظيفة فحص إجابات الأذونات
+        function checkPermissionAnswer(questionNum, answer) {
+            const resultDiv = document.getElementById(`permissionResult${questionNum}`);
+            const buttons = document.querySelectorAll(`#permissionScenarios .scenario:nth-child(${questionNum}) .option-btn`);
+            
+            // تعطيل الأزرار
+            buttons.forEach(btn => btn.disabled = true);
+            
+            let isCorrect = false;
+            let explanation = '';
+            
+            // فحص الإجابات الصحيحة
+            switch(questionNum) {
+                case 1: // تقرير مالي سري
+                    isCorrect = answer === 'read';
+                    explanation = isCorrect ? 
+                        'إذن القراءة مناسب للاطلاع على المحتوى دون إمكانية التعديل أو النسخ، مما يحافظ على سرية البيانات المالية.' :
+                        'إذن القراءة هو الأنسب هنا لأنه يسمح بالاطلاع على المحتوى فقط دون إمكانية التعديل أو النسخ.';
+                    break;
+                    
+                case 2: // برنامج تعليمي
+                    isCorrect = answer === 'execute';
+                    explanation = isCorrect ? 
+                        'إذن القراءة والتنفيذ ضروري لتشغيل البرامج التفاعلية والتطبيقات التعليمية.' :
+                        'إذن القراءة والتنفيذ مطلوب لتشغيل البرامج والتطبيقات التفاعلية.';
+                    break;
+                    
+                case 3: // مشاريع جماعية
+                    isCorrect = answer === 'modify';
+                    explanation = isCorrect ? 
+                        'إذن التعديل يسمح للفريق بإضافة وتعديل وحذف الملفات في المشاريع الجماعية.' :
+                        'إذن التعديل ضروري للتعاون الجماعي لأنه يسمح بإضافة وتعديل الملفات.';
+                    break;
+                    
+                case 4: // إعدادات النظام
+                    isCorrect = answer === 'full';
+                    explanation = isCorrect ? 
+                        'التحكم الكامل ضروري لمدير النظام لإدارة الإعدادات الحساسة وتعديل صلاحيات المستخدمين.' :
+                        'مدير النظام يحتاج للتحكم الكامل لإدارة الإعدادات الحساسة وصلاحيات المستخدمين.';
+                    break;
+                    
+                case 5: // عرض تقديمي
+                    isCorrect = answer === 'view';
+                    explanation = isCorrect ? 
+                        'إذن العرض مناسب لمشاهدة العروض التقديمية دون إمكانية التعديل أو النسخ.' :
+                        'إذن العرض هو الأنسب لمشاهدة المحتوى دون إمكانية التعديل.';
+                    break;
+            }
+            
+            // عرض النتيجة
+            if (isCorrect) {
+                resultDiv.className = 'result correct';
+                resultDiv.innerHTML = `
+                    <div style="font-size: 1.1rem; margin-bottom: 8px;">✅ إجابة صحيحة!</div>
+                    <div>${explanation}</div>
+                `;
+                permissionScore += 20;
+                // تمييز الإجابة الصحيحة
+                buttons.forEach(btn => {
+                    if (btn.onclick.toString().includes(`'${answer}'`)) {
+                        btn.classList.add('correct');
+                    }
+                });
+            } else {
+                resultDiv.className = 'result incorrect';
+                resultDiv.innerHTML = `
+                    <div style="font-size: 1.1rem; margin-bottom: 8px;">❌ إجابة خاطئة!</div>
+                    <div>${explanation}</div>
+                `;
+                // تمييز الإجابة الخاطئة والصحيحة
+                buttons.forEach(btn => {
+                    if (btn.onclick.toString().includes(`'${answer}'`)) {
+                        btn.classList.add('incorrect');
+                    }
+                });
+                // إظهار الإجابة الصحيحة
+                const correctAnswers = ['read', 'execute', 'modify', 'full', 'view'];
+                buttons.forEach(btn => {
+                    if (btn.onclick.toString().includes(`'${correctAnswers[questionNum-1]}'`)) {
+                        btn.classList.add('correct');
+                    }
+                });
+            }
+            
+            resultDiv.style.display = 'block';
+            answeredQuestions++;
+            
+            // إظهار النتيجة النهائية
+            if (answeredQuestions === totalQuestions) {
+                setTimeout(showFinalScore, 1000);
+            }
+        }
+
+        // عرض النتيجة النهائية
+        function showFinalScore() {
+            const scoreSection = document.getElementById('permissionScore');
+            const scoreValue = document.getElementById('scoreValue');
+            const scoreMessage = document.getElementById('scoreMessage');
+            
+            scoreValue.textContent = `${permissionScore}/100`;
+            
+            let message = '';
+            if (permissionScore >= 80) {
+                message = '🌟 ممتاز! أنت خبيرة في إدارة الأذونات!';
+            } else if (permissionScore >= 60) {
+                message = '👍 جيد جداً! تحتاجين لمراجعة بعض المفاهيم.';
+            } else if (permissionScore >= 40) {
+                message = '📚 جيد! ننصحك بمراجعة أنواع الأذونات مرة أخرى.';
+            } else {
+                message = '💪 تحتاجين لمزيد من الدراسة حول أنواع الأذونات.';
+            }
+            
+            scoreMessage.textContent = message;
+            scoreSection.style.display = 'block';
+            
+            // التمرير للنتيجة
+            scoreSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // إعادة تشغيل اللعبة
+        function resetPermissionGame() {
+            permissionScore = 0;
+            answeredQuestions = 0;
+            
+            // إخفاء النتائج
+            for (let i = 1; i <= totalQuestions; i++) {
+                const resultDiv = document.getElementById(`permissionResult${i}`);
+                resultDiv.style.display = 'none';
+                resultDiv.className = 'result';
+            }
+            
+            document.getElementById('permissionScore').style.display = 'none';
+            
+            // إعادة تفعيل الأزرار وإزالة التنسيقات
+            const allButtons = document.querySelectorAll('#permissionScenarios .option-btn');
+            allButtons.forEach(btn => {
+                btn.disabled = false;
+                btn.classList.remove('correct', 'incorrect');
+            });
+            
+            // التمرير لبداية اللعبة
+            document.querySelector('.activity-title').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9abb9cf483eacdf8',t:'MTc2NTM1Nzg2OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
