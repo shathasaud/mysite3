@@ -1,0 +1,1609 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>درس إدارة المهام التفاعلي الشامل - الإصدار 19</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap');
+        
+        body {
+            font-family: 'Tajawal', sans-serif;
+            font-size: 18px;
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .milestone-bg {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .deadline-bg {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .dependency-bg {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        
+        .celebration {
+            animation: celebrate 2s ease-in-out;
+        }
+        
+        @keyframes celebrate {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .drag-item {
+            cursor: grab;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+        
+        .drag-item:active {
+            cursor: grabbing;
+            transform: rotate(5deg);
+        }
+        
+        .drag-item.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg) scale(1.05);
+        }
+        
+        .drop-zone {
+            min-height: 200px;
+            border: 2px dashed #cbd5e0;
+            transition: all 0.3s ease;
+        }
+        
+        .drop-zone.drag-over {
+            border-color: #4299e1;
+            background-color: #ebf8ff;
+        }
+        
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #f39c12;
+            animation: confetti-fall 3s linear infinite;
+        }
+        
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+        
+        .star {
+            font-size: 1.5rem;
+            color: #d1d5db;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        
+        .star:hover {
+            transform: scale(1.2);
+        }
+        
+        .star.active {
+            color: #fbbf24;
+            animation: star-glow 0.5s ease-in-out;
+        }
+        
+        @keyframes star-glow {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+        
+        .star-celebration {
+            animation: star-celebration 1s ease-in-out;
+        }
+        
+        @keyframes star-celebration {
+            0% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.5) rotate(90deg); }
+            50% { transform: scale(1.2) rotate(180deg); }
+            75% { transform: scale(1.4) rotate(270deg); }
+            100% { transform: scale(1) rotate(360deg); }
+        }
+        
+        .feedback-message {
+            animation: fadeInUp 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .ranking-animation {
+            animation: slideInDown 0.8s ease-out;
+        }
+        
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .clickable {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .clickable:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .interactive-card {
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .interactive-card:hover {
+            border-color: #3b82f6;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        }
+
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .classification-item {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .classification-item:hover {
+            transform: scale(1.05);
+            border-color: #3b82f6;
+        }
+
+        .classification-item.selected {
+            border-color: #10b981;
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        }
+
+        .comparison-card {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .comparison-card:hover {
+            border-color: #8b5cf6;
+            transform: translateY(-3px);
+        }
+
+        .dropped-item {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border: 2px solid #10b981;
+            animation: dropSuccess 0.5s ease-in-out;
+        }
+
+        @keyframes dropSuccess {
+            0% { transform: scale(0.8); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .correct-drop {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border-color: #10b981;
+        }
+
+        .incorrect-drop {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border-color: #ef4444;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        
+        <!-- بطاقة 1: العنوان -->
+        <div class="gradient-bg rounded-3xl p-8 mb-8 text-white text-center card-hover">
+            <div class="flex justify-center items-center mb-4">
+                <span class="text-6xl ml-4">⏰</span>
+                <h1 class="text-4xl font-bold">إدارة المهام</h1>
+                <span class="text-6xl mr-4">📅</span>
+            </div>
+            <p class="text-xl opacity-90">المعالم والموعد النهائي والعلاقات بين المهام</p>
+        </div>
+
+        <!-- بطاقة 2: الأهداف التعليمية -->
+        <div class="bg-white rounded-3xl p-8 mb-8 shadow-lg card-hover">
+            <h2 class="text-3xl font-bold text-purple-800 mb-6 flex items-center">
+                <span class="text-4xl ml-3">🎯</span>
+                الأهداف التعليمية
+            </h2>
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="bg-purple-50 p-4 rounded-xl interactive-card">
+                    <h3 class="font-bold text-purple-700 mb-2">📍 فهم معنى المعلم الرئيسي</h3>
+                    <p class="text-sm text-purple-600">تحديد نقاط التحول المهمة في المشاريع</p>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-xl interactive-card">
+                    <h3 class="font-bold text-blue-700 mb-2">⚖️ التمييز بين المعلم والموعد النهائي</h3>
+                    <p class="text-sm text-blue-600">فهم الفرق بين نقاط التحول والمواعيد النهائية</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-xl interactive-card">
+                    <h3 class="font-bold text-green-700 mb-2">🔗 تحليل العلاقات بين المهام</h3>
+                    <p class="text-sm text-green-600">فهم كيفية ترابط وتسلسل المهام</p>
+                </div>
+                <div class="bg-orange-50 p-4 rounded-xl interactive-card">
+                    <h3 class="font-bold text-orange-700 mb-2">🧠 مهارات التفكير العليا</h3>
+                    <p class="text-sm text-orange-600">تطبيق التحليل والتقييم والابتكار</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- بطاقة 3: التهيئة -->
+        <div class="bg-white rounded-3xl p-8 mb-8 shadow-lg card-hover">
+            <h2 class="text-3xl font-bold text-indigo-800 mb-6 flex items-center">
+                <span class="text-4xl ml-3">🚀</span>
+                التهيئة
+            </h2>
+            <div class="bg-indigo-50 p-6 rounded-xl mb-6">
+                <h3 class="text-xl font-bold text-indigo-700 mb-4">سؤال واقعي محفز:</h3>
+                <p class="text-lg text-gray-700 leading-relaxed mb-6">
+                    "تخيلي أنكِ تديرين معرضًا كبيرًا لاحتفال بمناسبة وطنية.. ما الذي تعتبرينه نقطة التحول الأهم في المشروع؟"
+                </p>
+                
+                <div class="bg-white p-6 rounded-xl border-2 border-orange-200">
+                    <h4 class="text-lg font-bold text-orange-700 mb-4 flex items-center">
+                        <span class="text-2xl ml-2">💡</span>
+                        أفكار للمساعدة في التفكير:
+                    </h4>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="bg-orange-50 p-3 rounded-lg">
+                            <p class="text-sm">💡 فكري في اللحظة التي تشعرين فيها بالإنجاز الحقيقي</p>
+                        </div>
+                        <div class="bg-blue-50 p-3 rounded-lg">
+                            <p class="text-sm">🎯 ما هي النقطة التي لا يمكن العودة عنها؟</p>
+                        </div>
+                        <div class="bg-green-50 p-3 rounded-lg">
+                            <p class="text-sm">⚡ متى تشعرين أن المشروع أصبح جاهزاً للمرحلة التالية؟</p>
+                        </div>
+                        <div class="bg-purple-50 p-3 rounded-lg">
+                            <p class="text-sm">🌟 أي مرحلة تستحق الاحتفال عند اكتمالها؟</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- بطاقة 4: الإجابات المتوقعة -->
+        <div class="bg-white rounded-3xl p-8 mb-8 shadow-lg card-hover">
+            <h2 class="text-3xl font-bold text-green-800 mb-6 flex items-center">
+                <span class="text-4xl ml-3">💡</span>
+                الإجابات المتوقعة
+            </h2>
+            <div class="space-y-4">
+                <div class="bg-green-50 p-6 rounded-xl border-l-4 border-green-500">
+                    <h3 class="text-xl font-bold text-green-700 mb-4">إجابات محتملة من الطالبات:</h3>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="bg-white p-4 rounded-lg shadow-sm">
+                            <div class="flex items-center mb-2">
+                                <span class="text-2xl ml-2">✅</span>
+                                <h4 class="font-bold text-green-600">إجابات صحيحة:</h4>
+                            </div>
+                            <ul class="text-sm space-y-2">
+                                <li>• انتهاء تجهيز المكان</li>
+                                <li>• اكتمال جميع المعروضات</li>
+                                <li>• انتهاء التدريب على العرض</li>
+                                <li>• وصول جميع المشاركين</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-sm">
+                            <div class="flex items-center mb-2">
+                                <span class="text-2xl ml-2">🤔</span>
+                                <h4 class="font-bold text-orange-600">إجابات تحتاج توضيح:</h4>
+                            </div>
+                            <ul class="text-sm space-y-2">
+                                <li>• "بداية المعرض" (هذا موعد نهائي وليس معلم)</li>
+                                <li>• "طباعة الدعوات" (مهمة عادية)</li>
+                                <li>• "شراء المواد" (مهمة تحضيرية)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-blue-50 p-6 rounded-xl">
+                    <div class="bg-white p-4 rounded-lg">
+                        <h4 class="font-bold text-blue-700 mb-3">الإجابة النموذجية المتوقعة:</h4>
+                        <p class="text-gray-700 leading-relaxed">
+                            "المعلم الرئيسي هو <strong>انتهاء البروفة العامة الأخيرة</strong> لأنها تمثل نقطة التحول من مرحلة التحضير إلى مرحلة الاستعداد النهائي للعرض أمام الجمهور."
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- بطاقة 5: المعلم الرئيسي -->
+        <div class="milestone-bg rounded-3xl p-8 mb-8 text-white card-hover">
+            <h2 class="text-3xl font-bold mb-6 flex items-center">
+                <span class="text-4xl ml-3">📍</span>
+                المعلم الرئيسي (Milestone)
+            </h2>
+            <div class="bg-white bg-opacity-20 p-6 rounded-xl mb-6">
+                <p class="text-lg mb-4">
+                    المعلم الرئيسي هو نقطة تحول مهمة في المشروع تشير إلى إنجاز مرحلة معينة أو تحقيق هدف محدد.
+                </p>
+                
+                <div class="bg-white bg-opacity-30 p-6 rounded-lg">
+                    <h3 class="font-bold mb-4 text-yellow-200">🎭 مثال من مشروع مسرحي:</h3>
+                    <div class="space-y-3">
+                        <div class="bg-white bg-opacity-20 p-3 rounded-lg flex items-center">
+                            <span class="text-2xl ml-3">📝</span>
+                            <div>
+                                <span class="font-semibold text-white">المرحلة 1:</span> 
+                                <span class="text-yellow-100">كتابة السيناريو</span>
+                            </div>
+                        </div>
+                        <div class="bg-white bg-opacity-20 p-3 rounded-lg flex items-center">
+                            <span class="text-2xl ml-3">🎭</span>
+                            <div>
+                                <span class="font-semibold text-white">المرحلة 2:</span> 
+                                <span class="text-yellow-100">اختيار الممثلين</span>
+                            </div>
+                        </div>
+                        <div class="bg-white bg-opacity-20 p-3 rounded-lg flex items-center">
+                            <span class="text-2xl ml-3">🎪</span>
+                            <div>
+                                <span class="font-semibold text-white">المرحلة 3:</span> 
+                                <span class="text-yellow-100">التدريبات الأولية</span>
+                            </div>
+                        </div>
+                        <div class="bg-yellow-400 bg-opacity-80 p-4 rounded-lg border-2 border-yellow-300 pulse-animation">
+                            <div class="flex items-center">
+                                <span class="text-3xl ml-3">📍</span>
+                                <div>
+                                    <span class="font-bold text-purple-800">المعلم الرئيسي:</span> 
+                                    <span class="text-purple-900 font-semibold">انتهاء البروفة العامة الأخيرة</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-green-400 bg-opacity-60 p-3 rounded-lg flex items-center">
+                            <span class="text-2xl ml-3">🎉</span>
+                            <div>
+                                <span class="font-semibold text-green-900">النتيجة:</span> 
+                                <span class="text-green-800">العرض جاهز للجمهور!</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- بطاقة 6: الموعد النهائي -->
+        <div class="deadline-bg rounded-3xl p-8 mb-8 text-white card-hover">
+            <h2 class="text-3xl font-bold mb-6 flex items-center">
+                <span class="text-4xl ml-3">⏳</span>
+                الموعد النهائي (Deadline)
+            </h2>
+            
+            <div class="bg-white bg-opacity-20 p-6 rounded-xl mb-6">
+                <p class="text-lg mb-4">
+                    الموعد النهائي هو التاريخ المحدد الذي يجب إنهاء المهمة أو المشروع قبله أو فيه.
+                </p>
+                
+                <div class="bg-white bg-opacity-30 p-6 rounded-lg">
+                    <h3 class="font-bold mb-4 text-yellow-200">🎪 مثال من نفس المشروع المسرحي:</h3>
+                    <div class="bg-red-400 bg-opacity-80 p-4 rounded-lg border-2 border-red-300">
+                        <div class="flex items-center">
+                            <span class="text-3xl ml-3">⏰</span>
+                            <div>
+                                <span class="font-bold text-red-900">الموعد النهائي:</span> 
+                                <span class="text-red-800 font-semibold">يوم العرض الأول - 15 مارس 2024</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-white bg-opacity-20 p-6 rounded-xl">
+                    <h3 class="font-bold mb-3 text-yellow-200 flex items-center">
+                        <span class="text-2xl ml-2">⭐</span>
+                        خصائص الموعد النهائي:
+                    </h3>
+                    <ul class="space-y-2">
+                        <li class="text-yellow-100 bg-white bg-opacity-10 p-2 rounded flex items-center">
+                            <span class="text-lg ml-2">📅</span>
+                            تاريخ محدد وثابت
+                        </li>
+                        <li class="text-yellow-100 bg-white bg-opacity-10 p-2 rounded flex items-center">
+                            <span class="text-lg ml-2">🚫</span>
+                            لا يمكن تجاوزه
+                        </li>
+                        <li class="text-yellow-100 bg-white bg-opacity-10 p-2 rounded flex items-center">
+                            <span class="text-lg ml-2">⚡</span>
+                            يخلق ضغط إيجابي
+                        </li>
+                        <li class="text-yellow-100 bg-white bg-opacity-10 p-2 rounded flex items-center">
+                            <span class="text-lg ml-2">🎯</span>
+                            هدف نهائي واضح
+                        </li>
+                    </ul>
+                </div>
+                <div class="bg-white bg-opacity-20 p-6 rounded-xl">
+                    <h3 class="font-bold mb-3 text-cyan-200 flex items-center">
+                        <span class="text-2xl ml-2">💡</span>
+                        أمثلة من الحياة:
+                    </h3>
+                    <ul class="space-y-2">
+                        <li class="text-cyan-100 bg-white bg-opacity-10 p-2 rounded flex items-center">
+                            <span class="text-lg ml-2">📚</span>
+                            موعد الامتحان النهائي
+                        </li>
+                        <li class="text-cyan-100 bg-white bg-opacity-10 p-2 rounded flex items-center">
+                            <span class="text-lg ml-2">💒</span>
+                            تاريخ حفل الزفاف
+                        </li>
+                        <li class="text-cyan-100 bg-white bg-opacity-10 p-2 rounded flex items-center">
+                            <span class="text-lg ml-2">🏆</span>
+                            موعد المسابقة
+                        </li>
+                        <li class="text-cyan-100 bg-white bg-opacity-10 p-2 rounded flex items-center">
+                            <span class="text-lg ml-2">🎂</span>
+                            تاريخ عيد الميلاد
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- بطاقة 7: نشاط المقارنة -->
+        <div class="bg-white rounded-3xl p-8 mb-8 shadow-lg card-hover">
+            <h2 class="text-3xl font-bold text-indigo-800 mb-6 flex items-center">
+                <span class="text-4xl ml-3">⚖️</span>
+                نشاط المقارنة: المعلم الرئيسي vs الموعد النهائي
+            </h2>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="comparison-card bg-pink-50 p-6 rounded-xl border-2 border-pink-200">
+                    <div class="text-center mb-4">
+                        <span class="text-4xl block mb-2">📍</span>
+                        <h3 class="text-2xl font-bold text-pink-700">المعلم الرئيسي</h3>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-white p-4 rounded-lg shadow-sm">
+                            <h4 class="font-bold text-pink-600 mb-2">التعريف:</h4>
+                            <p class="text-sm">نقطة تحول مهمة تشير لإنجاز مرحلة معينة</p>
+                        </div>
+                        
+                        <div class="bg-white p-4 rounded-lg shadow-sm">
+                            <h4 class="font-bold text-pink-600 mb-2">الخصائص:</h4>
+                            <ul class="text-sm space-y-1">
+                                <li>• يمثل إنجاز وتقدم</li>
+                                <li>• نقطة فحص للجودة</li>
+                                <li>• يستحق الاحتفال</li>
+                                <li>• يمكن تعديل توقيته</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="bg-white p-4 rounded-lg shadow-sm">
+                            <h4 class="font-bold text-pink-600 mb-2">مثال:</h4>
+                            <p class="text-sm">"انتهاء كتابة أول فصل من الرواية"</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="comparison-card bg-blue-50 p-6 rounded-xl border-2 border-blue-200">
+                    <div class="text-center mb-4">
+                        <span class="text-4xl block mb-2">⏳</span>
+                        <h3 class="text-2xl font-bold text-blue-700">الموعد النهائي</h3>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-white p-4 rounded-lg shadow-sm">
+                            <h4 class="font-bold text-blue-600 mb-2">التعريف:</h4>
+                            <p class="text-sm">التاريخ المحدد لإنهاء المهمة أو المشروع</p>
+                        </div>
+                        
+                        <div class="bg-white p-4 rounded-lg shadow-sm">
+                            <h4 class="font-bold text-blue-600 mb-2">الخصائص:</h4>
+                            <ul class="text-sm space-y-1">
+                                <li>• تاريخ ثابت ومحدد</li>
+                                <li>• لا يمكن تجاوزه</li>
+                                <li>• يخلق ضغط زمني</li>
+                                <li>• هدف نهائي واضح</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="bg-white p-4 rounded-lg shadow-sm">
+                            <h4 class="font-bold text-blue-600 mb-2">مثال:</h4>
+                            <p class="text-sm">"موعد تسليم الرواية للناشر - 31 ديسمبر"</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 bg-gradient-to-r from-purple-50 to-indigo-50 p-6 rounded-xl border-2 border-purple-200">
+                <h3 class="text-xl font-bold text-purple-700 mb-4 flex items-center">
+                    <span class="text-2xl ml-2">🤔</span>
+                    سؤال للتفكير:
+                </h3>
+                <p class="text-lg text-gray-700 mb-4">
+                    "في مشروع تنظيم حفل تخرج، أيهما يأتي أولاً: المعلم الرئيسي أم الموعد النهائي؟ ولماذا؟"
+                </p>
+                
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="bg-white p-4 rounded-lg border-2 border-transparent hover:border-purple-300 cursor-pointer" onclick="showComparisonAnswer(1)">
+                        <div class="flex items-center">
+                            <span class="text-2xl ml-3">📍</span>
+                            <p class="font-semibold">المعلم الرئيسي يأتي أولاً</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg border-2 border-transparent hover:border-purple-300 cursor-pointer" onclick="showComparisonAnswer(2)">
+                        <div class="flex items-center">
+                            <span class="text-2xl ml-3">⏳</span>
+                            <p class="font-semibold">الموعد النهائي يأتي أولاً</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="comparisonAnswer" class="mt-4">
+                    <div class="bg-green-100 p-4 rounded-lg border-l-4 border-green-500">
+                        <p class="text-green-800 font-semibold">
+                            ✅ الإجابة الصحيحة: المعلم الرئيسي يأتي أولاً!
+                        </p>
+                        <p class="text-green-700 mt-2">
+                            المعالم الرئيسية تحدث أثناء تنفيذ المشروع، بينما الموعد النهائي هو نهاية المشروع.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- بطاقة 8: نشاط السحب والإفلات -->
+        <div class="bg-white rounded-3xl p-8 mb-8 shadow-lg card-hover">
+            <h2 class="text-4xl font-bold text-purple-800 mb-6 flex items-center">
+                <span class="text-5xl ml-3">🎯</span>
+                نشاط السحب والإفلات التفاعلي
+            </h2>
+            
+            <div class="grid md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-blue-50 p-6 rounded-xl border-l-4 border-blue-500">
+                    <h3 class="text-xl font-bold text-blue-700 mb-3 flex items-center">
+                        <span class="text-2xl ml-2">🎯</span>
+                        الاستراتيجية
+                    </h3>
+                    <p class="text-lg text-blue-600">التعلم النشط والسحب والإفلات</p>
+                </div>
+                
+                <div class="bg-green-50 p-6 rounded-xl border-l-4 border-green-500">
+                    <h3 class="text-xl font-bold text-green-700 mb-3 flex items-center">
+                        <span class="text-2xl ml-2">🧠</span>
+                        مهارة التفكير
+                    </h3>
+                    <p class="text-lg text-green-600">التحليل والتمييز والتصنيف</p>
+                </div>
+                
+                <div class="bg-orange-50 p-6 rounded-xl border-l-4 border-orange-500">
+                    <h3 class="text-xl font-bold text-orange-700 mb-3 flex items-center">
+                        <span class="text-2xl ml-2">⚙️</span>
+                        طريقة النشاط
+                    </h3>
+                    <p class="text-lg text-orange-600">سحب وإفلات تفاعلي</p>
+                </div>
+            </div>
+            
+            <div class="bg-purple-50 p-6 rounded-xl mb-6">
+                <h3 class="text-2xl font-bold text-purple-700 mb-4">التعليمات:</h3>
+                <p class="text-lg text-gray-700 mb-4">اسحبي كل عبارة من المنطقة العلوية وأفلتيها في التصنيف الصحيح</p>
+                
+                <div class="grid md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-pink-100 p-4 rounded-lg text-center border-2 border-pink-300">
+                        <span class="text-3xl block mb-2">📍</span>
+                        <strong class="text-xl text-pink-700">معلم رئيسي</strong>
+                        <p class="text-sm text-pink-600 mt-2">نقطة تحول مهمة في المشروع</p>
+                    </div>
+                    <div class="bg-blue-100 p-4 rounded-lg text-center border-2 border-blue-300">
+                        <span class="text-3xl block mb-2">⏳</span>
+                        <strong class="text-xl text-blue-700">موعد نهائي</strong>
+                        <p class="text-sm text-blue-600 mt-2">تاريخ محدد لإنهاء المهمة</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- منطقة العبارات للسحب -->
+            <div class="bg-gray-100 p-6 rounded-xl mb-6">
+                <h3 class="text-xl font-bold text-gray-700 mb-4 text-center">العبارات - اسحبي كل عبارة إلى التصنيف الصحيح</h3>
+                <div class="grid md:grid-cols-2 gap-4" id="dragItems">
+                    <div class="drag-item bg-white p-4 rounded-lg shadow-sm border-2 border-gray-200" draggable="true" data-type="milestone">
+                        <p class="font-semibold">انتهاء تجهيز قاعة المؤتمر</p>
+                        <p class="text-sm text-gray-600">نقطة تحول من التحضير إلى الاستقبال</p>
+                    </div>
+                    
+                    <div class="drag-item bg-white p-4 rounded-lg shadow-sm border-2 border-gray-200" draggable="true" data-type="deadline">
+                        <p class="font-semibold">موعد انطلاق المؤتمر - 10 صباحاً</p>
+                        <p class="text-sm text-gray-600">وقت محدد لا يمكن تأجيله</p>
+                    </div>
+                    
+                    <div class="drag-item bg-white p-4 rounded-lg shadow-sm border-2 border-gray-200" draggable="true" data-type="milestone">
+                        <p class="font-semibold">اكتمال تسجيل جميع المشاركين</p>
+                        <p class="text-sm text-gray-600">إنجاز مرحلة مهمة في التحضير</p>
+                    </div>
+                    
+                    <div class="drag-item bg-white p-4 rounded-lg shadow-sm border-2 border-gray-200" draggable="true" data-type="deadline">
+                        <p class="font-semibold">تاريخ تسليم التقرير النهائي - 25 مارس</p>
+                        <p class="text-sm text-gray-600">موعد ثابت لا يمكن تغييره</p>
+                    </div>
+                    
+                    <div class="drag-item bg-white p-4 rounded-lg shadow-sm border-2 border-gray-200" draggable="true" data-type="milestone">
+                        <p class="font-semibold">انتهاء مرحلة التصميم الأولي</p>
+                        <p class="text-sm text-gray-600">إنجاز يستحق المراجعة والاحتفال</p>
+                    </div>
+                    
+                    <div class="drag-item bg-white p-4 rounded-lg shadow-sm border-2 border-gray-200" draggable="true" data-type="deadline">
+                        <p class="font-semibold">موعد الامتحان النهائي - 15 يونيو</p>
+                        <p class="text-sm text-gray-600">تاريخ محدد مسبقاً من الجهة المختصة</p>
+                    </div>
+                    
+                    <div class="drag-item bg-white p-4 rounded-lg shadow-sm border-2 border-gray-200" draggable="true" data-type="milestone">
+                        <p class="font-semibold">اكتمال البروفة العامة الأخيرة</p>
+                        <p class="text-sm text-gray-600">نقطة الاستعداد النهائي للعرض</p>
+                    </div>
+                    
+                    <div class="drag-item bg-white p-4 rounded-lg shadow-sm border-2 border-gray-200" draggable="true" data-type="deadline">
+                        <p class="font-semibold">موعد حفل الزفاف - السبت 8 مساءً</p>
+                        <p class="text-sm text-gray-600">وقت محدد لا يمكن تأجيله</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- مناطق الإفلات -->
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+                <div class="drop-zone bg-pink-50 p-6 rounded-xl border-2 border-dashed border-pink-300" data-type="milestone">
+                    <div class="text-center mb-4">
+                        <span class="text-4xl block mb-2">📍</span>
+                        <h3 class="text-2xl font-bold text-pink-700">معلم رئيسي</h3>
+                        <p class="text-sm text-pink-600">أفلتي العبارات هنا</p>
+                    </div>
+                    <div class="dropped-items space-y-2" id="milestone-zone"></div>
+                </div>
+                
+                <div class="drop-zone bg-blue-50 p-6 rounded-xl border-2 border-dashed border-blue-300" data-type="deadline">
+                    <div class="text-center mb-4">
+                        <span class="text-4xl block mb-2">⏳</span>
+                        <h3 class="text-2xl font-bold text-blue-700">موعد نهائي</h3>
+                        <p class="text-sm text-blue-600">أفلتي العبارات هنا</p>
+                    </div>
+                    <div class="dropped-items space-y-2" id="deadline-zone"></div>
+                </div>
+            </div>
+
+            <!-- أزرار التحكم -->
+            <div class="text-center space-x-4">
+                <button onclick="checkDragDropAnswers()" class="bg-green-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-green-600 transition-all duration-300">
+                    ✅ فحص الإجابات
+                </button>
+                <button onclick="resetDragDrop()" class="bg-gray-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-600 transition-all duration-300">
+                    🔄 إعادة تعيين
+                </button>
+            </div>
+
+            <div class="mt-6 text-center">
+                <div id="dragDropScore" class="text-3xl font-bold text-purple-700 hidden">
+                    النتيجة: <span id="dragScoreDisplay">0/8</span>
+                </div>
+                <div id="dragDropFeedback" class="mt-4 hidden"></div>
+            </div>
+        </div>
+
+        <!-- بطاقة 9: العلاقات بين المهام -->
+        <div class="bg-gradient-to-br from-emerald-100 to-teal-200 rounded-3xl p-8 mb-8 text-gray-800 card-hover">
+            <h2 class="text-4xl font-bold mb-6 flex items-center">
+                <span class="text-5xl ml-3">🔗</span>
+                العلاقات بين المهام (Dependencies)
+            </h2>
+            
+            <div class="bg-white bg-opacity-70 p-6 rounded-xl mb-6">
+                <p class="text-xl mb-4">
+                    العلاقات بين المهام تحدد كيفية ترابط وتسلسل المهام في المشروع، وتؤثر على التوقيت والتنفيذ.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="bg-white bg-opacity-80 p-6 rounded-xl border border-emerald-300 interactive-card">
+                    <div class="flex items-center mb-3">
+                        <span class="text-4xl ml-3">🏁➡️🚀</span>
+                        <h3 class="text-xl font-bold text-emerald-700">النهاية للبداية</h3>
+                    </div>
+                    <p class="text-lg text-gray-700 mb-3">انتهاء المهمة الأولى قبل بدء الثانية</p>
+                    <div class="bg-emerald-50 p-3 rounded">
+                        <p class="text-base text-emerald-800"><strong>مثال:</strong> انتهاء كتابة السيناريو قبل بدء التدريبات</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white bg-opacity-80 p-6 rounded-xl border border-emerald-300 interactive-card">
+                    <div class="flex items-center mb-3">
+                        <span class="text-4xl ml-3">🚀➡️🚀</span>
+                        <h3 class="text-xl font-bold text-emerald-700">البداية للبداية</h3>
+                    </div>
+                    <p class="text-lg text-gray-700 mb-3">بدء المهمتين في نفس الوقت</p>
+                    <div class="bg-emerald-50 p-3 rounded">
+                        <p class="text-base text-emerald-800"><strong>مثال:</strong> بدء التصوير مع بدء الإضاءة</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white bg-opacity-80 p-6 rounded-xl border border-emerald-300 interactive-card">
+                    <div class="flex items-center mb-3">
+                        <span class="text-4xl ml-3">🏁➡️🏁</span>
+                        <h3 class="text-xl font-bold text-emerald-700">النهاية للنهاية</h3>
+                    </div>
+                    <p class="text-lg text-gray-700 mb-3">انتهاء المهمتين في نفس الوقت</p>
+                    <div class="bg-emerald-50 p-3 rounded">
+                        <p class="text-base text-emerald-800"><strong>مثال:</strong> انتهاء المونتاج مع انتهاء التسجيل</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white bg-opacity-80 p-6 rounded-xl border border-emerald-300 interactive-card">
+                    <div class="flex items-center mb-3">
+                        <span class="text-4xl ml-3">🚀➡️🏁</span>
+                        <h3 class="text-xl font-bold text-emerald-700">البداية للنهاية</h3>
+                    </div>
+                    <p class="text-lg text-gray-700 mb-3">بدء الأولى يؤدي لانتهاء الثانية</p>
+                    <div class="bg-emerald-50 p-3 rounded">
+                        <p class="text-base text-emerald-800"><strong>مثال:</strong> بدء الطباعة يوقف التصميم</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- بطاقة 10: نشاط الفرز التفاعلي -->
+        <div class="bg-white rounded-3xl p-8 mb-8 shadow-lg card-hover">
+            <h2 class="text-4xl font-bold text-indigo-800 mb-6 flex items-center">
+                <span class="text-5xl ml-3">🔄</span>
+                نشاط الفرز التفاعلي - العلاقات المنطقية
+            </h2>
+            
+            <div class="grid md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-indigo-50 p-6 rounded-xl border-l-4 border-indigo-500">
+                    <h3 class="text-xl font-bold text-indigo-700 mb-3 flex items-center">
+                        <span class="text-2xl ml-2">🎯</span>
+                        الاستراتيجية
+                    </h3>
+                    <p class="text-lg text-indigo-600">الفرز والتصنيف التفاعلي</p>
+                </div>
+                
+                <div class="bg-purple-50 p-6 rounded-xl border-l-4 border-purple-500">
+                    <h3 class="text-xl font-bold text-purple-700 mb-3 flex items-center">
+                        <span class="text-2xl ml-2">🧠</span>
+                        مهارة التفكير
+                    </h3>
+                    <p class="text-lg text-purple-600">التحليل المنطقي والربط</p>
+                </div>
+                
+                <div class="bg-teal-50 p-6 rounded-xl border-l-4 border-teal-500">
+                    <h3 class="text-xl font-bold text-teal-700 mb-3 flex items-center">
+                        <span class="text-2xl ml-2">⚙️</span>
+                        الهدف
+                    </h3>
+                    <p class="text-lg text-teal-600">تصنيف العلاقات المنطقية</p>
+                </div>
+            </div>
+            
+            <div class="bg-indigo-50 p-6 rounded-xl mb-6">
+                <h3 class="text-2xl font-bold text-indigo-700 mb-4">التعليمات:</h3>
+                <p class="text-lg text-gray-700 mb-4">اقرئي كل مثال وحددي نوع العلاقة المنطقية بين المهام</p>
+                
+                <div class="grid md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-pink-100 p-4 rounded-lg text-center border-2 border-pink-300">
+                        <span class="text-3xl block mb-2">🏁➡️🚀</span>
+                        <strong class="text-lg text-pink-700">النهاية للبداية</strong>
+                        <p class="text-sm text-pink-600 mt-2">انتهاء الأولى قبل بدء الثانية</p>
+                    </div>
+                    <div class="bg-blue-100 p-4 rounded-lg text-center border-2 border-blue-300">
+                        <span class="text-3xl block mb-2">🚀➡️🚀</span>
+                        <strong class="text-lg text-blue-700">البداية للبداية</strong>
+                        <p class="text-sm text-blue-600 mt-2">بدء المهمتين معاً</p>
+                    </div>
+                    <div class="bg-green-100 p-4 rounded-lg text-center border-2 border-green-300">
+                        <span class="text-3xl block mb-2">🏁➡️🏁</span>
+                        <strong class="text-lg text-green-700">النهاية للنهاية</strong>
+                        <p class="text-sm text-green-600 mt-2">انتهاء المهمتين معاً</p>
+                    </div>
+                    <div class="bg-orange-100 p-4 rounded-lg text-center border-2 border-orange-300">
+                        <span class="text-3xl block mb-2">🚀➡️🏁</span>
+                        <strong class="text-lg text-orange-700">البداية للنهاية</strong>
+                        <p class="text-sm text-orange-600 mt-2">بدء الأولى ينهي الثانية</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-4" id="sortingItems">
+                <div class="classification-item bg-gray-50 p-5 rounded-lg" onclick="selectSorting(this, 'finish-start')">
+                    <p class="text-lg font-semibold mb-2">انتهاء تصميم الموقع ← بدء برمجة الموقع</p>
+                    <p class="text-base text-gray-600">لا يمكن البرمجة قبل اكتمال التصميم</p>
+                    <div class="mt-3 hidden" id="sort-feedback-0">
+                        <span class="text-green-600 text-lg font-bold">✅ صحيح! النهاية للبداية</span>
+                    </div>
+                </div>
+                
+                <div class="classification-item bg-gray-50 p-5 rounded-lg" onclick="selectSorting(this, 'start-start')">
+                    <p class="text-lg font-semibold mb-2">بدء تحضير الطعام ← بدء تزيين القاعة</p>
+                    <p class="text-base text-gray-600">يمكن القيام بالمهمتين في نفس الوقت</p>
+                    <div class="mt-3 hidden" id="sort-feedback-1">
+                        <span class="text-green-600 text-lg font-bold">✅ صحيح! البداية للبداية</span>
+                    </div>
+                </div>
+                
+                <div class="classification-item bg-gray-50 p-5 rounded-lg" onclick="selectSorting(this, 'finish-finish')">
+                    <p class="text-lg font-semibold mb-2">انتهاء كتابة المقال ← انتهاء مراجعة المقال</p>
+                    <p class="text-base text-gray-600">المراجعة تنتهي مع انتهاء الكتابة</p>
+                    <div class="mt-3 hidden" id="sort-feedback-2">
+                        <span class="text-green-600 text-lg font-bold">✅ صحيح! النهاية للنهاية</span>
+                    </div>
+                </div>
+                
+                <div class="classification-item bg-gray-50 p-5 rounded-lg" onclick="selectSorting(this, 'start-finish')">
+                    <p class="text-lg font-semibold mb-2">بدء الطباعة النهائية ← انتهاء التعديلات على التصميم</p>
+                    <p class="text-base text-gray-600">بدء الطباعة يعني توقف التعديلات</p>
+                    <div class="mt-3 hidden" id="sort-feedback-3">
+                        <span class="text-green-600 text-lg font-bold">✅ صحيح! البداية للنهاية</span>
+                    </div>
+                </div>
+                
+                <div class="classification-item bg-gray-50 p-5 rounded-lg" onclick="selectSorting(this, 'finish-start')">
+                    <p class="text-lg font-semibold mb-2">انتهاء شراء المواد ← بدء الطبخ</p>
+                    <p class="text-base text-gray-600">يجب شراء المواد قبل البدء بالطبخ</p>
+                    <div class="mt-3 hidden" id="sort-feedback-4">
+                        <span class="text-green-600 text-lg font-bold">✅ صحيح! النهاية للبداية</span>
+                    </div>
+                </div>
+                
+                <div class="classification-item bg-gray-50 p-5 rounded-lg" onclick="selectSorting(this, 'start-start')">
+                    <p class="text-lg font-semibold mb-2">بدء التصوير ← بدء الإضاءة</p>
+                    <p class="text-base text-gray-600">التصوير والإضاءة يبدآن معاً</p>
+                    <div class="mt-3 hidden" id="sort-feedback-5">
+                        <span class="text-green-600 text-lg font-bold">✅ صحيح! البداية للبداية</span>
+                    </div>
+                </div>
+                
+                <div class="classification-item bg-gray-50 p-5 rounded-lg" onclick="selectSorting(this, 'finish-finish')">
+                    <p class="text-lg font-semibold mb-2">انتهاء التدريب ← انتهاء التقييم</p>
+                    <p class="text-base text-gray-600">التقييم ينتهي مع انتهاء التدريب</p>
+                    <div class="mt-3 hidden" id="sort-feedback-6">
+                        <span class="text-green-600 text-lg font-bold">✅ صحيح! النهاية للنهاية</span>
+                    </div>
+                </div>
+                
+                <div class="classification-item bg-gray-50 p-5 rounded-lg" onclick="selectSorting(this, 'start-finish')">
+                    <p class="text-lg font-semibold mb-2">بدء الاختبار النهائي ← انتهاء فترة المراجعة</p>
+                    <p class="text-base text-gray-600">بدء الاختبار يعني انتهاء وقت المراجعة</p>
+                    <div class="mt-3 hidden" id="sort-feedback-7">
+                        <span class="text-green-600 text-lg font-bold">✅ صحيح! البداية للنهاية</span>
+                    </div>
+                </div>
+                
+                <div class="classification-item bg-gray-50 p-5 rounded-lg" onclick="selectSorting(this, 'finish-start')">
+                    <p class="text-lg font-semibold mb-2">انتهاء كتابة السيناريو ← بدء التدريبات</p>
+                    <p class="text-base text-gray-600">التدريبات تبدأ بعد اكتمال السيناريو</p>
+                    <div class="mt-3 hidden" id="sort-feedback-8">
+                        <span class="text-green-600 text-lg font-bold">✅ صحيح! النهاية للبداية</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 text-center">
+                <div id="sortingScore" class="text-3xl font-bold text-indigo-700">
+                    النتيجة: <span id="sortScoreDisplay">0/9</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- بطاقة 11: النشاط الجماعي -->
+        <div class="bg-white rounded-3xl p-8 mb-8 shadow-lg card-hover">
+            <h2 class="text-3xl font-bold text-orange-800 mb-6 flex items-center">
+                <span class="text-4xl ml-3">👥</span>
+                النشاط الجماعي - تخطيط مشروع
+            </h2>
+            
+            <div class="bg-orange-50 p-6 rounded-xl mb-6">
+                <h3 class="text-xl font-bold text-orange-700 mb-4">سيناريو المشروع:</h3>
+                <div class="bg-white p-4 rounded-lg border-l-4 border-orange-400">
+                    <p class="text-lg text-gray-700">
+                        "تنظيم معرض علمي مدرسي للاحتفال بأسبوع العلوم"
+                    </p>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl">
+                    <h3 class="text-xl font-bold text-blue-700 mb-4 flex items-center">
+                        <span class="text-2xl ml-2">📋</span>
+                        المطلوب من كل مجموعة:
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center bg-white p-3 rounded-lg shadow-sm">
+                            <span class="text-2xl ml-3">📝</span>
+                            <p class="text-sm"><strong>1.</strong> تحديد 3 معالم رئيسية</p>
+                        </div>
+                        <div class="flex items-center bg-white p-3 rounded-lg shadow-sm">
+                            <span class="text-2xl ml-3">⏰</span>
+                            <p class="text-sm"><strong>2.</strong> تحديد الموعد النهائي</p>
+                        </div>
+                        <div class="flex items-center bg-white p-3 rounded-lg shadow-sm">
+                            <span class="text-2xl ml-3">🔗</span>
+                            <p class="text-sm"><strong>3.</strong> إظهار علاقتين بين المهام</p>
+                        </div>
+                        <div class="flex items-center bg-white p-3 rounded-lg shadow-sm">
+                            <span class="text-2xl ml-3">🎨</span>
+                            <p class="text-sm"><strong>4.</strong> رسم مخطط بصري</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl">
+                    <h3 class="text-xl font-bold text-green-700 mb-4 flex items-center">
+                        <span class="text-2xl ml-2">⭐</span>
+                        معايير التقييم:
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="bg-white p-3 rounded-lg shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-semibold">وضوح المعالم</span>
+                                <div class="flex space-x-1">
+                                    <span class="star" onclick="rateCriteria(this, 1, 1)">⭐</span>
+                                    <span class="star" onclick="rateCriteria(this, 1, 2)">⭐</span>
+                                    <span class="star" onclick="rateCriteria(this, 1, 3)">⭐</span>
+                                    <span class="star" onclick="rateCriteria(this, 1, 4)">⭐</span>
+                                    <span class="star" onclick="rateCriteria(this, 1, 5)">⭐</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-3 rounded-lg shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-semibold">منطقية التسلسل</span>
+                                <div class="flex space-x-1">
+                                    <span class="star" onclick="rateCriteria(this, 2, 1)">⭐</span>
+                                    <span class="star" onclick="rateCriteria(this, 2, 2)">⭐</span>
+                                    <span class="star" onclick="rateCriteria(this, 2, 3)">⭐</span>
+                                    <span class="star" onclick="rateCriteria(this, 2, 4)">⭐</span>
+                                    <span class="star" onclick="rateCriteria(this, 2, 5)">⭐</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-3 rounded-lg shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-semibold">جودة العرض</span>
+                                <div class="flex space-x-1">
+                                    <span class="star" onclick="rateCriteria(this, 3, 1)">⭐</span>
+                                    <span class="star" onclick="rateCriteria(this, 3, 2)">⭐</span>
+                                    <span class="star" onclick="rateCriteria(this, 3, 3)">⭐</span>
+                                    <span class="star" onclick="rateCriteria(this, 3, 4)">⭐</span>
+                                    <span class="star" onclick="rateCriteria(this, 3, 5)">⭐</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 bg-yellow-50 p-6 rounded-xl border-2 border-yellow-300">
+                <h3 class="text-lg font-bold text-yellow-700 mb-4 flex items-center">
+                    <span class="text-2xl ml-2">💡</span>
+                    مثال توضيحي للمساعدة:
+                </h3>
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div class="bg-white p-4 rounded-lg">
+                        <h4 class="font-bold text-pink-600 mb-2">📍 معالم رئيسية:</h4>
+                        <ul class="text-sm space-y-1">
+                            <li>• اختيار المشاريع</li>
+                            <li>• تجهيز المعروضات</li>
+                            <li>• تدريب المقدمين</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg">
+                        <h4 class="font-bold text-blue-600 mb-2">⏰ موعد نهائي:</h4>
+                        <p class="text-sm">افتتاح المعرض - الأحد 10 صباحاً</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg">
+                        <h4 class="font-bold text-green-600 mb-2">🔗 علاقات:</h4>
+                        <ul class="text-sm space-y-1">
+                            <li>• اختيار المشاريع → تجهيز المعروضات</li>
+                            <li>• تجهيز المعروضات → تدريب المقدمين</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- بطاقة 12: التقويم -->
+        <div class="bg-white rounded-3xl p-8 mb-8 shadow-lg card-hover">
+            <h2 class="text-3xl font-bold text-red-800 mb-6 flex items-center">
+                <span class="text-4xl ml-3">📊</span>
+                التقويم
+            </h2>
+            
+            <div class="space-y-6">
+                <div class="bg-red-50 p-6 rounded-xl border-l-4 border-red-400">
+                    <div class="flex items-center mb-4">
+                        <span class="bg-red-200 text-red-800 px-3 py-1 rounded-full text-sm font-bold ml-3">مهارة التحليل</span>
+                        <h3 class="text-xl font-bold text-red-700">سؤال التفكير العليا الأول:</h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg">
+                        <p class="text-lg mb-4 font-semibold text-gray-800">
+                            "حللي العلاقة بين تأخير معلم رئيسي واحد وتأثيره على سلسلة المهام التالية في المشروع. اربطي إجابتك بمثال واقعي من حياتك."
+                        </p>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h4 class="font-bold text-gray-700 mb-2">مساحة للإجابة والمناقشة:</h4>
+                            <div class="min-h-[100px] bg-white border-2 border-dashed border-gray-300 rounded-lg p-4">
+                                <p class="text-gray-500 text-center">مساحة للكتابة أو المناقشة الشفهية</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-purple-50 p-6 rounded-xl border-l-4 border-purple-400">
+                    <div class="flex items-center mb-4">
+                        <span class="bg-purple-200 text-purple-800 px-3 py-1 rounded-full text-sm font-bold ml-3">مهارة التقييم والابتكار</span>
+                        <h3 class="text-xl font-bold text-purple-700">سؤال التفكير العليا الثاني:</h3>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg">
+                        <p class="text-lg mb-4 font-semibold text-gray-800">
+                            "قيّمي فعالية استخدام المعالم الرئيسية في إدارة المشاريع، ثم اقترحي طريقة مبتكرة لتطبيق هذا المفهوم في تنظيم دراستك الشخصية."
+                        </p>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h4 class="font-bold text-gray-700 mb-2">مساحة للإجابة والمناقشة:</h4>
+                            <div class="min-h-[120px] bg-white border-2 border-dashed border-gray-300 rounded-lg p-4">
+                                <p class="text-gray-500 text-center">مساحة للكتابة أو المناقشة الشفهية</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 p-6 rounded-xl border-l-4 border-blue-400">
+                    <h3 class="text-2xl font-bold text-blue-800 mb-4 flex items-center">
+                        <span class="text-3xl ml-3">⭐</span>
+                        معايير التقييم
+                    </h3>
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div class="bg-white p-4 rounded-lg shadow-sm">
+                            <h4 class="font-bold text-green-700 mb-2 flex items-center">
+                                <span class="text-xl ml-2">🎯</span>
+                                الفهم والاستيعاب
+                            </h4>
+                            <ul class="text-sm text-gray-600 space-y-1">
+                                <li>• فهم المفاهيم الأساسية</li>
+                                <li>• التمييز بين المصطلحات</li>
+                                <li>• ربط المعلومات</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-sm">
+                            <h4 class="font-bold text-blue-700 mb-2 flex items-center">
+                                <span class="text-xl ml-2">🔍</span>
+                                التحليل والتطبيق
+                            </h4>
+                            <ul class="text-sm text-gray-600 space-y-1">
+                                <li>• تحليل العلاقات</li>
+                                <li>• تطبيق المفاهيم</li>
+                                <li>• حل المشكلات</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-sm">
+                            <h4 class="font-bold text-purple-700 mb-2 flex items-center">
+                                <span class="text-xl ml-2">💡</span>
+                                الإبداع والابتكار
+                            </h4>
+                            <ul class="text-sm text-gray-600 space-y-1">
+                                <li>• الأفكار المبتكرة</li>
+                                <li>• الحلول الإبداعية</li>
+                                <li>• التفكير النقدي</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- بطاقة 13: تقييم المجموعات -->
+        <div class="bg-white rounded-3xl p-8 mb-8 shadow-lg card-hover">
+            <h2 class="text-3xl font-bold text-indigo-800 mb-6 flex items-center">
+                <span class="text-4xl ml-3">🏆</span>
+                تقييم المجموعات
+            </h2>
+            
+            <!-- نموذج التقييم -->
+            <div class="bg-indigo-50 p-6 rounded-xl mb-8">
+                <h3 class="text-xl font-bold text-indigo-700 mb-4 flex items-center">
+                    <span class="text-2xl ml-2">📋</span>
+                    نموذج التقييم:
+                </h3>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-semibold text-gray-700">وضوح المعالم الرئيسية</span>
+                            <span class="text-sm text-gray-500">(25 نقطة)</span>
+                        </div>
+                        <div class="flex space-x-1" id="clarity-rating">
+                            <span class="star" onclick="rateGroup(this, 'clarity', 1)">⭐</span>
+                            <span class="star" onclick="rateGroup(this, 'clarity', 2)">⭐</span>
+                            <span class="star" onclick="rateGroup(this, 'clarity', 3)">⭐</span>
+                            <span class="star" onclick="rateGroup(this, 'clarity', 4)">⭐</span>
+                            <span class="star" onclick="rateGroup(this, 'clarity', 5)">⭐</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-semibold text-gray-700">منطقية العلاقات</span>
+                            <span class="text-sm text-gray-500">(25 نقطة)</span>
+                        </div>
+                        <div class="flex space-x-1" id="logic-rating">
+                            <span class="star" onclick="rateGroup(this, 'logic', 1)">⭐</span>
+                            <span class="star" onclick="rateGroup(this, 'logic', 2)">⭐</span>
+                            <span class="star" onclick="rateGroup(this, 'logic', 3)">⭐</span>
+                            <span class="star" onclick="rateGroup(this, 'logic', 4)">⭐</span>
+                            <span class="star" onclick="rateGroup(this, 'logic', 5)">⭐</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-semibold text-gray-700">جودة العرض</span>
+                            <span class="text-sm text-gray-500">(25 نقطة)</span>
+                        </div>
+                        <div class="flex space-x-1" id="presentation-rating">
+                            <span class="star" onclick="rateGroup(this, 'presentation', 1)">⭐</span>
+                            <span class="star" onclick="rateGroup(this, 'presentation', 2)">⭐</span>
+                            <span class="star" onclick="rateGroup(this, 'presentation', 3)">⭐</span>
+                            <span class="star" onclick="rateGroup(this, 'presentation', 4)">⭐</span>
+                            <span class="star" onclick="rateGroup(this, 'presentation', 5)">⭐</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-semibold text-gray-700">التعاون والمشاركة</span>
+                            <span class="text-sm text-gray-500">(25 نقطة)</span>
+                        </div>
+                        <div class="flex space-x-1" id="teamwork-rating">
+                            <span class="star" onclick="rateGroup(this, 'teamwork', 1)">⭐</span>
+                            <span class="star" onclick="rateGroup(this, 'teamwork', 2)">⭐</span>
+                            <span class="star" onclick="rateGroup(this, 'teamwork', 3)">⭐</span>
+                            <span class="star" onclick="rateGroup(this, 'teamwork', 4)">⭐</span>
+                            <span class="star" onclick="rateGroup(this, 'teamwork', 5)">⭐</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 text-center">
+                    <div class="bg-gradient-to-r from-purple-500 to-indigo-600 text-white p-4 rounded-lg">
+                        <div class="text-2xl font-bold">النتيجة الإجمالية</div>
+                        <div class="text-3xl font-bold" id="totalScore">0/100</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- تقييم المجموعات الست -->
+            <div class="bg-yellow-50 p-6 rounded-xl">
+                <h3 class="text-2xl font-bold text-yellow-700 mb-4 flex items-center">
+                    <span class="text-3xl ml-2">👥</span>
+                    تقييم المجموعات:
+                </h3>
+                <p class="text-lg text-gray-700 mb-6">قيّم كل مجموعة في المعايير الأربعة (كل نجمة = 20 نقطة)</p>
+                
+                <!-- الصف الأول - 3 مجموعات -->
+                <div class="grid md:grid-cols-3 gap-4 mb-6" id="groupsEvaluationRow1">
+                    <!-- المجموعة الأولى -->
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-2 border-blue-200">
+                        <div class="text-center mb-3">
+                            <span class="text-2xl block mb-1">🔵</span>
+                            <h4 class="text-lg font-bold text-blue-700">المجموعة الأولى</h4>
+                            <div class="text-xl font-bold text-blue-600 mt-1" id="group1-total">0/100</div>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <div class="bg-blue-50 p-2 rounded-lg">
+                                <div class="text-xs font-semibold text-blue-700 mb-1">وضوح المعالم</div>
+                                <div class="flex justify-center space-x-1">
+                                    <span class="star text-sm" onclick="rateGroupNew(1, 'clarity', 1)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(1, 'clarity', 2)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(1, 'clarity', 3)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(1, 'clarity', 4)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(1, 'clarity', 5)">⭐</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-blue-50 p-2 rounded-lg">
+                                <div class="text-xs font-semibold text-blue-700 mb-1">منطقية العلاقات</div>
+                                <div class="flex justify-center space-x-1">
+                                    <span class="star text-sm" onclick="rateGroupNew(1, 'logic', 1)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(1, 'logic', 2)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(1, 'logic', 3)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(1, 'logic', 4)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(1, 'logic', 5)">⭐</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-blue-50 p-2 rounded-lg">
+                                <div class="text-xs font-semibold text-blue-700 mb-1">جودة العرض</div>
+                                <div class="flex justify-center space-x-1">
+                                    <span class="star text-sm" onclick="rateGroupNew(1, 'presentation', 1)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(1, 'presentation', 2)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(1, 'presentation', 3)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(1, 'presentation', 4)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(1, 'presentation', 5)">⭐</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-blue-50 p-2 rounded-lg">
+                                <div class="text-xs font-semibold text-blue-700 mb-1">التعاون والمشاركة</div>
+                                <div class="flex justify-center space-x-1">
+                                    <span class="star text-sm" onclick="rateGroupNew(1, 'teamwork', 1)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(1, 'teamwork', 2)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(1, 'teamwork', 3)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(1, 'teamwork', 4)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(1, 'teamwork', 5)">⭐</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- المجموعة الثانية -->
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-2 border-green-200">
+                        <div class="text-center mb-3">
+                            <span class="text-2xl block mb-1">🟢</span>
+                            <h4 class="text-lg font-bold text-green-700">المجموعة الثانية</h4>
+                            <div class="text-xl font-bold text-green-600 mt-1" id="group2-total">0/100</div>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <div class="bg-green-50 p-2 rounded-lg">
+                                <div class="text-xs font-semibold text-green-700 mb-1">وضوح المعالم</div>
+                                <div class="flex justify-center space-x-1">
+                                    <span class="star text-sm" onclick="rateGroupNew(2, 'clarity', 1)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(2, 'clarity', 2)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(2, 'clarity', 3)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(2, 'clarity', 4)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(2, 'clarity', 5)">⭐</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-green-50 p-2 rounded-lg">
+                                <div class="text-xs font-semibold text-green-700 mb-1">منطقية العلاقات</div>
+                                <div class="flex justify-center space-x-1">
+                                    <span class="star text-sm" onclick="rateGroupNew(2, 'logic', 1)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(2, 'logic', 2)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(2, 'logic', 3)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(2, 'logic', 4)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(2, 'logic', 5)">⭐</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-green-50 p-2 rounded-lg">
+                                <div class="text-xs font-semibold text-green-700 mb-1">جودة العرض</div>
+                                <div class="flex justify-center space-x-1">
+                                    <span class="star text-sm" onclick="rateGroupNew(2, 'presentation', 1)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(2, 'presentation', 2)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(2, 'presentation', 3)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(2, 'presentation', 4)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(2, 'presentation', 5)">⭐</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-green-50 p-2 rounded-lg">
+                                <div class="text-xs font-semibold text-green-700 mb-1">التعاون والمشاركة</div>
+                                <div class="flex justify-center space-x-1">
+                                    <span class="star text-sm" onclick="rateGroupNew(2, 'teamwork', 1)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(2, 'teamwork', 2)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(2, 'teamwork', 3)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(2, 'teamwork', 4)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(2, 'teamwork', 5)">⭐</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- المجموعة الثالثة -->
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-2 border-red-200">
+                        <div class="text-center mb-3">
+                            <span class="text-2xl block mb-1">🔴</span>
+                            <h4 class="text-lg font-bold text-red-700">المجموعة الثالثة</h4>
+                            <div class="text-xl font-bold text-red-600 mt-1" id="group3-total">0/100</div>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <div class="bg-red-50 p-2 rounded-lg">
+                                <div class="text-xs font-semibold text-red-700 mb-1">وضوح المعالم</div>
+                                <div class="flex justify-center space-x-1">
+                                    <span class="star text-sm" onclick="rateGroupNew(3, 'clarity', 1)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(3, 'clarity', 2)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(3, 'clarity', 3)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(3, 'clarity', 4)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(3, 'clarity', 5)">⭐</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-red-50 p-2 rounded-lg">
+                                <div class="text-xs font-semibold text-red-700 mb-1">منطقية العلاقات</div>
+                                <div class="flex justify-center space-x-1">
+                                    <span class="star text-sm" onclick="rateGroupNew(3, 'logic', 1)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(3, 'logic', 2)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(3, 'logic', 3)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(3, 'logic', 4)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(3, 'logic', 5)">⭐</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-red-50 p-2 rounded-lg">
+                                <div class="text-xs font-semibold text-red-700 mb-1">جودة العرض</div>
+                                <div class="flex justify-center space-x-1">
+                                    <span class="star text-sm" onclick="rateGroupNew(3, 'presentation', 1)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(3, 'presentation', 2)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(3, 'presentation', 3)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(3, 'presentation', 4)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(3, 'presentation', 5)">⭐</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-red-50 p-2 rounded-lg">
+                                <div class="text-xs font-semibold text-red-700 mb-1">التعاون والمشاركة</div>
+                                <div class="flex justify-center space-x-1">
+                                    <span class="star text-sm" onclick="rateGroupNew(3, 'teamwork', 1)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(3, 'teamwork', 2)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(3, 'teamwork', 3)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(3, 'teamwork', 4)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(3, 'teamwork', 5)">⭐</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- الصف الثاني - 3 مجموعات -->
+                <div class="grid md:grid-cols-3 gap-4 mb-6" id="groupsEvaluationRow2">
+                    <!-- المجموعة الرابعة -->
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-2 border-purple-200">
+                        <div class="text-center mb-3">
+                            <span class="text-2xl block mb-1">🟣</span>
+                            <h4 class="text-lg font-bold text-purple-700">المجموعة الرابعة</h4>
+                            <div class="text-xl font-bold text-purple-600 mt-1" id="group4-total">0/100</div>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <div class="bg-purple-50 p-2 rounded-lg">
+                                <div class="text-xs font-semibold text-purple-700 mb-1">وضوح المعالم</div>
+                                <div class="flex justify-center space-x-1">
+                                    <span class="star text-sm" onclick="rateGroupNew(4, 'clarity', 1)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(4, 'clarity', 2)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(4, 'clarity', 3)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(4, 'clarity', 4)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(4, 'clarity', 5)">⭐</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-purple-50 p-2 rounded-lg">
+                                <div class="text-xs font-semibold text-purple-700 mb-1">منطقية العلاقات</div>
+                                <div class="flex justify-center space-x-1">
+                                    <span class="star text-sm" onclick="rateGroupNew(4, 'logic', 1)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(4, 'logic', 2)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(4, 'logic', 3)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(4, 'logic', 4)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(4, 'logic', 5)">⭐</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-purple-50 p-2 rounded-lg">
+                                <div class="text-xs font-semibold text-purple-700 mb-1">جودة العرض</div>
+                                <div class="flex justify-center space-x-1">
+                                    <span class="star text-sm" onclick="rateGroupNew(4, 'presentation', 1)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(4, 'presentation', 2)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(4, 'presentation', 3)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(4, 'presentation', 4)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(4, 'presentation', 5)">⭐</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-purple-50 p-2 rounded-lg">
+                                <div class="text-xs font-semibold text-purple-700 mb-1">التعاون والمشاركة</div>
+                                <div class="flex justify-center space-x-1">
+                                    <span class="star text-sm" onclick="rateGroupNew(4, 'teamwork', 1)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(4, 'teamwork', 2)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(4, 'teamwork', 3)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(4, 'teamwork', 4)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(4, 'teamwork', 5)">⭐</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- المجموعة الخامسة -->
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-2 border-orange-200">
+                        <div class="text-center mb-3">
+                            <span class="text-2xl block mb-1">🟠</span>
+                            <h4 class="text-lg font-bold text-orange-700">المجموعة الخامسة</h4>
+                            <div class="text-xl font-bold text-orange-600 mt-1" id="group5-total">0/100</div>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <div class="bg-orange-50 p-2 rounded-lg">
+                                <div class="text-xs font-semibold text-orange-700 mb-1">وضوح المعالم</div>
+                                <div class="flex justify-center space-x-1">
+                                    <span class="star text-sm" onclick="rateGroupNew(5, 'clarity', 1)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(5, 'clarity', 2)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(5, 'clarity', 3)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(5, 'clarity', 4)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(5, 'clarity', 5)">⭐</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-orange-50 p-2 rounded-lg">
+                                <div class="text-xs font-semibold text-orange-700 mb-1">منطقية العلاقات</div>
+                                <div class="flex justify-center space-x-1">
+                                    <span class="star text-sm" onclick="rateGroupNew(5, 'logic', 1)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(5, 'logic', 2)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(5, 'logic', 3)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(5, 'logic', 4)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(5, 'logic', 5)">⭐</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-orange-50 p-2 rounded-lg">
+                                <div class="text-xs font-semibold text-orange-700 mb-1">جودة العرض</div>
+                                <div class="flex justify-center space-x-1">
+                                    <span class="star text-sm" onclick="rateGroupNew(5, 'presentation', 1)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(5, 'presentation', 2)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(5, 'presentation', 3)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(5, 'presentation', 4)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(5, 'presentation', 5)">⭐</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-orange-50 p-2 rounded-lg">
+                                <div class="text-xs font-semibold text-orange-700 mb-1">التعاون والمشاركة</div>
+                                <div class="flex justify-center space-x-1">
+                                    <span class="star text-sm" onclick="rateGroupNew(5, 'teamwork', 1)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(5, 'teamwork', 2)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(5, 'teamwork', 3)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(5, 'teamwork', 4)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(5, 'teamwork', 5)">⭐</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- المجموعة السادسة -->
+                    <div class="bg-white p-4 rounded-xl shadow-sm border-2 border-teal-200">
+                        <div class="text-center mb-3">
+                            <span class="text-2xl block mb-1">🟡</span>
+                            <h4 class="text-lg font-bold text-teal-700">المجموعة السادسة</h4>
+                            <div class="text-xl font-bold text-teal-600 mt-1" id="group6-total">0/100</div>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <div class="bg-teal-50 p-2 rounded-lg">
+                                <div class="text-xs font-semibold text-teal-700 mb-1">وضوح المعالم</div>
+                                <div class="flex justify-center space-x-1">
+                                    <span class="star text-sm" onclick="rateGroupNew(6, 'clarity', 1)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(6, 'clarity', 2)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(6, 'clarity', 3)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(6, 'clarity', 4)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(6, 'clarity', 5)">⭐</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-teal-50 p-2 rounded-lg">
+                                <div class="text-xs font-semibold text-teal-700 mb-1">منطقية العلاقات</div>
+                                <div class="flex justify-center space-x-1">
+                                    <span class="star text-sm" onclick="rateGroupNew(6, 'logic', 1)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(6, 'logic', 2)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(6, 'logic', 3)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(6, 'logic', 4)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(6, 'logic', 5)">⭐</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-teal-50 p-2 rounded-lg">
+                                <div class="text-xs font-semibold text-teal-700 mb-1">جودة العرض</div>
+                                <div class="flex justify-center space-x-1">
+                                    <span class="star text-sm" onclick="rateGroupNew(6, 'presentation', 1)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(6, 'presentation', 2)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(6, 'presentation', 3)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(6, 'presentation', 4)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(6, 'presentation', 5)">⭐</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-teal-50 p-2 rounded-lg">
+                                <div class="text-xs font-semibold text-teal-700 mb-1">التعاون والمشاركة</div>
+                                <div class="flex justify-center space-x-1">
+                                    <span class="star text-sm" onclick="rateGroupNew(6, 'teamwork', 1)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(6, 'teamwork', 2)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(6, 'teamwork', 3)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(6, 'teamwork', 4)">⭐</span>
+                                    <span class="star text-sm" onclick="rateGroupNew(6, 'teamwork', 5)">⭐</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                
+            <!-- ترتيب المجموعات (مخفي في البداية) -->
+            <div id="groupRanking" class="mt-8 hidden">
+                <div class="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl p-6 text-white">
+                    <h3 class="text-2xl font-bold mb-4 text-center flex items-center justify-center">
+                        <span class="text-3xl ml-2">🏆</span>
+                        ترتيب المجموعات
+                    </h3>
+                    <div id="rankingList" class="space-y-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- بطاقة 14: الخلاصة والتطبيق -->
+        <div class="bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 rounded-3xl p-8 mb-8 shadow-lg card-hover">
+            <h2 class="text-4xl font-bold text-indigo-800 mb-6 flex items-center">
+                <span class="text-5xl ml-3">🎓</span>
+                الخلاصة والتطبيق
+            </h2>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- الخلاصة -->
+                <div class="bg-white bg-opacity-70 p-6 rounded-xl">
+                    <h3 class="text-2xl font-bold text-purple-700 mb-4 flex items-center">
+                        <span class="text-3xl ml-2">📝</span>
+                        ملخص ما تعلمناه:
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-pink-50 p-4 rounded-lg border-l-4 border-pink-400">
+                            <h4 class="font-bold text-pink-700 mb-2">📍 المعلم الرئيسي:</h4>
+                            <p class="text-sm text-pink-600">نقطة تحول مهمة تشير لإنجاز مرحلة معينة</p>
+                        </div>
+                        
+                        <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400">
+                            <h4 class="font-bold text-blue-700 mb-2">⏳ الموعد النهائي:</h4>
+                            <p class="text-sm text-blue-600">التاريخ المحدد لإنهاء المهمة أو المشروع</p>
+                        </div>
+                        
+                        <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-400">
+                            <h4 class="font-bold text-green-700 mb-2">🔗 العلاقات بين المهام:</h4>
+                            <p class="text-sm text-green-600">كيفية ترابط وتسلسل المهام في المشروع</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- التطبيق العملي -->
+                <div class="bg-white bg-opacity-70 p-6 rounded-xl">
+                    <h3 class="text-2xl font-bold text-indigo-700 mb-4 flex items-center">
+                        <span class="text-3xl ml-2">🚀</span><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9abb4ee3658bce00',t:'MTc2NTM1NDY3MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
